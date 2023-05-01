@@ -9,7 +9,7 @@ const points = [
     destination: '2',
     isFavorite: false,
     offers: [
-      '1'
+      1,
     ],
     type: 'taxi'
   },
@@ -21,8 +21,8 @@ const points = [
     destination: '3',
     isFavorite: true,
     offers: [
-      '1',
-      '2'
+      1,
+      2
     ],
     type: 'flight'
   },
@@ -34,7 +34,7 @@ const points = [
     destination: '4',
     isFavorite: false,
     offers: [
-      '1'
+      1
     ],
     type: 'ship'
   },
@@ -46,9 +46,9 @@ const points = [
     destination: '5',
     isFavorite: true,
     offers: [
-      '1',
-      '2',
-      '3'
+      1,
+      2,
+      3
     ],
     type: 'train'
   }
