@@ -1,14 +1,14 @@
 import { createElement } from '../render';
-import { Icons, DateFormats } from '../consts';
+import { Types, DateFormats } from '../consts';
 import { humanizeDate } from '../util/utils';
 
 const createEventTypesTemplate = (type) =>
-  Object.values(Icons).map((value) => /*html*/`<div class="event__type-item">
+  Object.values(Types).map((value) => /*html*/`<div class="event__type-item">
     <input id="event-type-${value}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${value}" ${type === value ? 'checked=""' : ''}>
     <label class="event__type-label  event__type-label--${value}" for="event-type-${value}-1">${value}</label>
   </div>`).join('');
 
-const createEventOfferSelecetor = (offers) => offers.map((offer) => /*html*/`<div class="event__offer-selector">
+const createEventOfferSelectors = (offers) => offers.map((offer) => /*html*/`<div class="event__offer-selector">
   <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title}-1" type="checkbox" name="event-offer-${offer.title}">
   <label class="event__offer-label" for="event-offer-${offer.title}-1">
     <span class="event__offer-title">${offer.title}</span>
@@ -75,7 +75,7 @@ const createEditPointTemplate = (point, destination, offers) => /*html*/`<li cla
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-        ${createEventOfferSelecetor(offers)}
+        ${createEventOfferSelectors(offers)}
       </div>
     </section>
 

@@ -3,7 +3,7 @@ const offers = [
     type: 'taxi',
     offers: [
       {
-        id: '1',
+        id: 1,
         title: 'Upgrade to a business class',
         price: 120
       }
@@ -13,12 +13,12 @@ const offers = [
     type: 'flight',
     offers: [
       {
-        id: '1',
+        id: 1,
         title: 'Upgrade to comfort class',
         price: 50
       },
       {
-        id: '2',
+        id: 2,
         title: 'Choose seats',
         price: 90
       },
@@ -28,7 +28,7 @@ const offers = [
     type: 'ship',
     offers: [
       {
-        id: '1',
+        id: 1,
         title: 'Upgrade to a business class',
         price: 120
       }
@@ -38,17 +38,17 @@ const offers = [
     type: 'train',
     offers: [
       {
-        id: '1',
+        id: 1,
         title: 'Upgrade to a business class',
         price: 120
       },
       {
-        id: '2',
+        id: 2,
         title: 'Choose seats',
         price: 90
       },
       {
-        id: '3',
+        id: 3,
         title: 'dinner',
         price: 40
       },

@@ -6,7 +6,7 @@ const DateFormats = {
   SLASH_FULL_DATE: 'DD/MM/YY HH:MM',
 };
 
-const Icons = {
+const Types = {
   TAXI: 'taxi',
   BUS: 'bus',
   TRAIN: 'train',
@@ -18,4 +18,4 @@ const Icons = {
   RESTAURANT: 'restaurant',
 };
 
-export { DateFormats, Icons };
+export { DateFormats, Types };
