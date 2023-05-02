@@ -1,32 +1,38 @@
 import { createElement } from '../render';
+import { humanizeDate, getTimeDiff } from '../util/utils';
+import { DateFormats } from '../consts.js';
 
-const createListElementTemplate = () => `<li class="trip-events__item">
+const getOffersTemplate = (offers) => offers.map((offer) => /*html*/
+  `<li class="event__offer">
+    <span class="event__offer-title">${offer.title}</span>
+    +€&nbsp;
+    <span class="event__offer-price">${offer.price}</span>
+  </li>`).join('');
+
+
+const createListElementTemplate = (point, destination, offers) => /*html*/`<li class="trip-events__item">
 <div class="event">
-  <time class="event__date" datetime="2019-03-18">MAR 18</time>
+  <time class="event__date" datetime="${humanizeDate(point.dateFrom, DateFormats.NORMAL)}">${humanizeDate(point.dateFrom, DateFormats.MONTH_WITH_DAY)}</time>
   <div class="event__type">
-    <img class="event__type-icon" width="42" height="42" src="img/icons/taxi.png" alt="Event type icon">
+    <img class="event__type-icon" width="42" height="42" src="img/icons/${point.type}.png" alt="Event type icon">
   </div>
-  <h3 class="event__title">Taxi Amsterdam</h3>
+  <h3 class="event__title">${point.type} ${destination.name}</h3>
   <div class="event__schedule">
     <p class="event__time">
-      <time class="event__start-time" datetime="2019-03-18T10:30">10:30</time>
+      <time class="event__start-time" datetime="${humanizeDate(point.dateFrom, DateFormats.FULL_DATE)}">${humanizeDate(point.dateFrom, DateFormats.TIME)}</time>
       —
-      <time class="event__end-time" datetime="2019-03-18T11:00">11:00</time>
+      <time class="event__end-time" datetime="${humanizeDate(point.dateTo, DateFormats.FULL_DATE)}">${humanizeDate(point.dateTo, DateFormats.TIME)}</time>
     </p>
-    <p class="event__duration">30M</p>
+    <p class="event__duration">${getTimeDiff(point.dateTo, point.dateFrom)}</p>
   </div>
   <p class="event__price">
-    €&nbsp;<span class="event__price-value">20</span>
+    €&nbsp;<span class="event__price-value">${point.basePrice}</span>
   </p>
   <h4 class="visually-hidden">Offers:</h4>
   <ul class="event__selected-offers">
-    <li class="event__offer">
-      <span class="event__offer-title">Order Uber</span>
-      +€&nbsp;
-      <span class="event__offer-price">20</span>
-    </li>
+    ${getOffersTemplate(offers)}
   </ul>
-  <button class="event__favorite-btn event__favorite-btn--active" type="button">
+  <button class="event__favorite-btn event__favorite-btn--${point.isFavorite ? 'active' : ''}" type="button">
     <span class="visually-hidden">Add to favorite</span>
     <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
       <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"></path>
@@ -40,9 +46,18 @@ const createListElementTemplate = () => `<li class="trip-events__item">
 
 export default class ListElementView {
   #element;
+  #point;
+  #destination;
+  #offers;
+
+  constructor(point, destination, offers) {
+    this.#point = point;
+    this.#destination = destination;
+    this.#offers = offers;
+  }
 
   getTemplate() {
-    return createListElementTemplate();
+    return createListElementTemplate(this.#point, this.#destination, this.#offers);
   }
 
   getElement() {
