@@ -18,4 +18,19 @@ const Types = {
   RESTAURANT: 'restaurant',
 };
 
-export { DateFormats, Types };
+const FilterTypes = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past',
+};
+
+const SortTypes = {
+  DAY: 'day',
+  EVENT: 'event',
+  TIME: 'time',
+  PRICE: 'price',
+  OFFERS: 'offers',
+};
+
+export { DateFormats, Types, FilterTypes, SortTypes };

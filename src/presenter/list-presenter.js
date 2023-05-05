@@ -3,6 +3,7 @@ import ListView from '../view/list-view';
 import SortView from '../view/sort-view';
 import ListElementView from '../view/list-element-view';
 import EditPointView from '../view/edit-point-view';
+import EmptyListView from '../view/list-empty-view';
 
 const NUMBER_OF_LIST_ELEMENTS = 4;
 
@@ -23,10 +24,14 @@ export default class ListPresenter {
   }
 
   init() {
-    render(new SortView(), this.#listContainer);
-    render(this.#listView, this.#listContainer);
-    for (let i = 0; i < NUMBER_OF_LIST_ELEMENTS; i++) {
-      this.#renderListElement(this.#points[i], this.#destination[i], this.#offers[i]);
+    if (this.#points.length === 0) {
+      render(new EmptyListView(), this.#listContainer);
+    } else {
+      render(new SortView(), this.#listContainer);
+      render(this.#listView, this.#listContainer);
+      for (let i = 0; i < NUMBER_OF_LIST_ELEMENTS; i++) {
+        this.#renderListElement(this.#points[i], this.#destination[i], this.#offers[i]);
+      }
     }
   }
 
