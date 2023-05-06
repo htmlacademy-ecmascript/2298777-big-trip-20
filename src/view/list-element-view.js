@@ -1,6 +1,6 @@
-import { createElement } from '../render';
 import { humanizeDate, getTimeDiff } from '../util/utils';
 import { DateFormats } from '../consts.js';
+import AbstractView from '../framework/view/abstract-view';
 
 const getOffersTemplate = (offers) => offers.map((offer) => /*html*/
   `<li class="event__offer">
@@ -44,31 +44,27 @@ const createListElementTemplate = (point, destination, offers) => /*html*/`<li c
 </div>
 </li>`;
 
-export default class ListElementView {
-  #element;
+export default class ListElementView extends AbstractView{
   #point;
   #destination;
   #offers;
+  #onPointButtonClick;
 
-  constructor(point, destination, offers) {
+  constructor(point, destination, offers, onPointButtonClick) {
+    super();
     this.#point = point;
     this.#destination = destination;
     this.#offers = offers;
+    this.#onPointButtonClick = onPointButtonClick;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlePointButtonClick);
   }
 
-  getTemplate() {
+  get template() {
     return createListElementTemplate(this.#point, this.#destination, this.#offers);
   }
 
-  getElement() {
-    if (!this.#element) {
-      this.#element = createElement(this.getTemplate());
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  #handlePointButtonClick = (evt) => {
+    evt.preventDefault();
+    this.#onPointButtonClick();
+  };
 }
