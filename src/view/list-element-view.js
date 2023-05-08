@@ -49,14 +49,17 @@ export default class ListElementView extends AbstractView{
   #destination;
   #offers;
   #onPointButtonClick;
+  #onFavoriteButtonClick;
 
-  constructor(point, destination, offers, onPointButtonClick) {
+  constructor(point, destination, offers, onPointButtonClick, onFavoriteButtonClick) {
     super();
     this.#point = point;
     this.#destination = destination;
     this.#offers = offers;
     this.#onPointButtonClick = onPointButtonClick;
+    this.#onFavoriteButtonClick = onFavoriteButtonClick;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlePointButtonClick);
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#handleFavoriteButtonClick);
   }
 
   get template() {
@@ -66,5 +69,10 @@ export default class ListElementView extends AbstractView{
   #handlePointButtonClick = (evt) => {
     evt.preventDefault();
     this.#onPointButtonClick();
+  };
+
+  #handleFavoriteButtonClick = (evt) => {
+    evt.preventDefault();
+    this.#onFavoriteButtonClick();
   };
 }
