@@ -10,9 +10,9 @@ export default class ListPresenter {
   #pointsModel;
   #listView = new ListView();
   #points;
+  #listElementPresenter;
   #destinations;
   #offers;
-  #listElementPresenter;
 
   constructor(listContainer, pointsModel) {
     this.#listContainer = listContainer;
@@ -20,7 +20,12 @@ export default class ListPresenter {
     this.#points = this.#pointsModel.getPoints();
     this.#destinations = this.#pointsModel.getDestinationsInfo();
     this.#offers = this.#pointsModel.getOffers();
-    this.#listElementPresenter = new ListElementPresenter(this.#listView, this.#points, this.#destinations, this.#offers);
+    this.#listElementPresenter = new ListElementPresenter({
+      listElementContainer: this.#listView,
+      points: this.#points,
+      destinations: this.#destinations,
+      offers: this.#offers,
+    });
   }
 
   init() {

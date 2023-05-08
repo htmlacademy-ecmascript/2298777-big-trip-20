@@ -10,7 +10,7 @@ export default class ListElementPresenter {
   #destinations;
   #offers;
 
-  constructor(listElementContainer, points, destinations, offers) {
+  constructor({listElementContainer, points, destinations, offers}) {
     this.#listElementContainer = listElementContainer;
     this.#points = points;
     this.#destinations = destinations;
@@ -43,7 +43,9 @@ export default class ListElementPresenter {
     };
 
     const onFavoriteButtonClick = () => {
-      alert('Favorite button clicked');
+      point.isFavorite = !point.isFavorite;
+      this.#listElementContainer.clearList();
+      this.init();
     };
 
     const pointView = new ListElementView(point, destination, offers, onPointButtonClick, onFavoriteButtonClick);
