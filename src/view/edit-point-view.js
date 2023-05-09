@@ -18,7 +18,7 @@ const createEventOfferSelectors = (offers) => offers.map((offer) => /*html*/`<di
 </div>`).join('');
 
 const createEditPointTemplate = (point, destination, offers) => /*html*/`<li class="trip-events__item">
-<form class="event event--edit" action="#" method="post">
+<form class="event event--edit" action="#" method="post" data-unique-id=${point.uniqueId}>
   <header class="event__header">
     <div class="event__type-wrapper">
       <label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -66,7 +66,7 @@ const createEditPointTemplate = (point, destination, offers) => /*html*/`<li cla
 
     <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
     <button class="event__reset-btn" type="reset">Delete</button>
-    <button class="event__rollup-btn" type="button">
+    <button class="event__rollup-btn" type="button" data-unique-id=${point.uniqueId}>
       <span class="visually-hidden">Open event</span>
     </button>
   </header>
@@ -109,6 +109,6 @@ export default class EditPointView extends AbstractView {
 
   #handlePointButtonClick = (evt) => {
     evt.preventDefault();
-    this.#onPointButtonClick();
+    this.#onPointButtonClick(evt);
   };
 }

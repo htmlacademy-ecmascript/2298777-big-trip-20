@@ -6,8 +6,4 @@ export default class ListView extends AbstractView{
   get template() {
     return createListTemplate();
   }
-
-  clearList() {
-    this.element.innerHTML = '';
-  }
 }
