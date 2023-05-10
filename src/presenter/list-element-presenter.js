@@ -11,7 +11,6 @@ export default class ListElementPresenter {
   #offers;
   #listElements = new Map();
   #editFormElements = new Map();
-  #currentPoint = null;
 
   constructor({listElementContainer, points, destinations, offers}) {
     this.#listElementContainer = listElementContainer;
@@ -36,20 +35,19 @@ export default class ListElementPresenter {
       }
     };
 
-    const onEditPointButtonClick = (evt) => {
-      changeEditFormToPoint(this.#listElements.get(evt.target.dataset.uniqueId).pointView,
-        this.#editFormElements.get(evt.target.dataset.uniqueId).editPointView);
-      document.removeEventListener('keydown', this.#listElements.get(evt.target.dataset.uniqueId).documentListener);
+    const onEditPointButtonClick = () => {
+      changeEditFormToPoint(this.#listElements.get(point.uniqueId).pointView,
+        this.#editFormElements.get(point.uniqueId).editPointView);
+      document.removeEventListener('keydown', this.#listElements.get(point.uniqueId).documentListener);
     };
 
-    const onPointButtonClick = (evt) => {
-      this.#currentPoint = point.uniqueId;
+    const onPointButtonClick = () => {
       this.#removeAllDocumentsListeners();
       this.destroy();
       this.init();
-      changePointToEditForm(this.#listElements.get(evt.target.dataset.uniqueId).pointView,
-        this.#editFormElements.get(evt.target.dataset.uniqueId).editPointView);
-      document.addEventListener('keydown', this.#listElements.get(evt.target.dataset.uniqueId).documentListener);
+      changePointToEditForm(this.#listElements.get(point.uniqueId).pointView,
+        this.#editFormElements.get(point.uniqueId).editPointView);
+      document.addEventListener('keydown', this.#listElements.get(point.uniqueId).documentListener);
     };
 
     const onFavoriteButtonClick = () => {

@@ -38,7 +38,7 @@ const createListElementTemplate = (point, destination, offers) => /*html*/`<li c
       <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"></path>
     </svg>
   </button>
-  <button class="event__rollup-btn" type="button" data-unique-id=${point.uniqueId}>
+  <button class="event__rollup-btn" type="button">
     <span class="visually-hidden">Open event</span>
   </button>
 </div>
@@ -68,7 +68,7 @@ export default class ListElementView extends AbstractView{
 
   #handlePointButtonClick = (evt) => {
     evt.preventDefault();
-    this.#onPointButtonClick(evt);
+    this.#onPointButtonClick();
   };
 
   #handleFavoriteButtonClick = (evt) => {
