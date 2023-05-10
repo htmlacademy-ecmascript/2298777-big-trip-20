@@ -19,9 +19,9 @@ export default class ListElementPresenter {
     this.#offers = offers;
   }
 
-  init() {
+  init(points = this.#points, destinations = this.#destinations, offers = this.#offers) {
     for (let i = 0; i < NUMBER_OF_LIST_ELEMENTS; i++) {
-      this.#renderListElement(this.#points[i], this.#destinations[i], this.#offers[i]);
+      this.#renderListElement(points[i], destinations[i], offers[i]);
     }
   }
 

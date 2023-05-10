@@ -1,8 +1,8 @@
 import { render } from '../framework/render';
 import ListView from '../view/list-view';
-import SortView from '../view/sort-view';
 import EmptyListView from '../view/list-empty-view';
 import ListElementPresenter from './list-element-presenter';
+import SortPresenter from './sort-presenter';
 
 
 export default class ListPresenter {
@@ -13,6 +13,7 @@ export default class ListPresenter {
   #listElementPresenter;
   #destinations;
   #offers;
+  #sortPresenter;
 
   constructor(listContainer, pointsModel) {
     this.#listContainer = listContainer;
@@ -26,13 +27,18 @@ export default class ListPresenter {
       destinations: this.#destinations,
       offers: this.#offers,
     });
+    this.#sortPresenter = new SortPresenter({
+      SortContainer: this.#listContainer,
+      points: this.#points,
+      listElementPresenter: this.#listElementPresenter,
+    });
   }
 
   init() {
     if (this.#points.length === 0) {
       render(new EmptyListView(), this.#listContainer);
     } else {
-      render(new SortView(), this.#listContainer);
+      this.#sortPresenter.init();
       render(this.#listView, this.#listContainer);
       this.#listElementPresenter.init();
     }
