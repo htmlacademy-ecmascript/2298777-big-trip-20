@@ -21,7 +21,9 @@ export default class SortPresenter {
     for (const sortElement of this.#generateSorts()) {
       const sortElementView = new SortElementView(sortElement);
       render(sortElementView, this.#sortView.element);
-      sortElementView.addSortClickHandler();
+      if (sortElement.name !== SortTypes.EVENT && sortElement.name !== SortTypes.OFFERS) {
+        sortElementView.addSortClickHandler();
+      }
     }
   }
 
@@ -29,11 +31,9 @@ export default class SortPresenter {
     return Object.entries(sort).map(([sortName, sortFunction]) => ({
       name: sortName,
       sort: () => {
-        if (sortName !== SortTypes.EVENT || sortName !== SortTypes.OFFERS) {
+        if (sortName !== SortTypes.EVENT && sortName !== SortTypes.OFFERS) {
           this.#listElementPresenter.destroy();
           this.#listElementPresenter.init(sortFunction(this.#points));
-        } else {
-          return false;
         }
       }
     }));
