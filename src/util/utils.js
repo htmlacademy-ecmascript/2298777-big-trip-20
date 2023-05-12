@@ -8,4 +8,6 @@ const getTimeDiff = (dateTo, dateFrom) => `${dayjs(dateTo).diff(dayjs(dateFrom),
 
 const getDiffInSeconds = (dateTo, dateFrom) => dayjs(dateTo).diff(dayjs(dateFrom), 'second');
 
-export { getRandomArrayElement, humanizeDate, getTimeDiff, getDiffInSeconds };
+const updateItem = (items, update) => items.map((item) => item.uniqueId === update.uniqueId ? update : item);
+
+export { getRandomArrayElement, humanizeDate, getTimeDiff, getDiffInSeconds, updateItem };

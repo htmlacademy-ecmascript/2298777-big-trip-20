@@ -7,13 +7,13 @@ import { SortTypes } from '../consts';
 export default class SortPresenter {
   #sortContainer;
   #points;
-  #listElementPresenter;
+  #listPresenter;
   #sortView = new SortView();
 
-  constructor({SortContainer, points, listElementPresenter}) {
+  constructor({SortContainer, points, listPresenter}) {
     this.#sortContainer = SortContainer;
     this.#points = points;
-    this.#listElementPresenter = listElementPresenter;
+    this.#listPresenter = listPresenter;
   }
 
   init() {
@@ -32,8 +32,8 @@ export default class SortPresenter {
       name: sortName,
       sort: () => {
         if (sortName !== SortTypes.EVENT && sortName !== SortTypes.OFFERS) {
-          this.#listElementPresenter.destroy();
-          this.#listElementPresenter.init(sortFunction(this.#points));
+          this.#listPresenter.destroy();
+          this.#listPresenter.renderPoints({points: sortFunction(this.#points)});
         }
       }
     }));

@@ -1,19 +1,21 @@
 import { render } from '../framework/render';
 import ListView from '../view/list-view';
 import EmptyListView from '../view/list-empty-view';
-import ListElementPresenter from './list-element-presenter';
 import SortPresenter from './sort-presenter';
+import PointPresenter from './point-presenter';
+import { updateItem } from '../util/utils';
 
+const NUMBER_OF_LIST_ELEMENTS = 4;
 
 export default class ListPresenter {
   #listContainer;
   #pointsModel;
   #listView = new ListView();
   #points;
-  #listElementPresenter;
   #destinations;
   #offers;
   #sortPresenter;
+  #pointPresenters = new Map();
 
   constructor(listContainer, pointsModel) {
     this.#listContainer = listContainer;
@@ -21,16 +23,10 @@ export default class ListPresenter {
     this.#points = this.#pointsModel.getPoints();
     this.#destinations = this.#pointsModel.getDestinationsInfo();
     this.#offers = this.#pointsModel.getOffers();
-    this.#listElementPresenter = new ListElementPresenter({
-      listElementContainer: this.#listView,
-      points: this.#points,
-      destinations: this.#destinations,
-      offers: this.#offers,
-    });
     this.#sortPresenter = new SortPresenter({
       SortContainer: this.#listContainer,
       points: this.#points,
-      listElementPresenter: this.#listElementPresenter,
+      listPresenter: this,
     });
   }
 
@@ -40,7 +36,36 @@ export default class ListPresenter {
     } else {
       this.#sortPresenter.init();
       render(this.#listView, this.#listContainer);
-      this.#listElementPresenter.init();
+      this.renderPoints();
     }
   }
+
+  renderPoints({points = this.#points, destinations = this.#destinations, offers = this.#offers} = {}) {
+    for(let i = 0; i < NUMBER_OF_LIST_ELEMENTS; i++) {
+      const point = new PointPresenter({
+        pointContainer: this.#listView,
+        onPointChange: this.#handlePointChange,
+        onModeChange: this.#handleModeChange,
+        point: points[i],
+        destination: destinations[i],
+        offers: offers[i],
+      });
+      point.init({});
+      this.#pointPresenters.set(points[i].uniqueId, point);
+    }
+  }
+
+  destroy() {
+    this.#pointPresenters.forEach((pointPresenter) => pointPresenter.destroy());
+    this.#pointPresenters.clear();
+  }
+
+  #handlePointChange = (updatedPoint) => {
+    this.#points = updateItem(this.#points, updatedPoint);
+    this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint});
+  };
+
+  #handleModeChange = () => {
+    this.#pointPresenters.forEach((pointPresenter) => pointPresenter.resetView());
+  };
 }
