@@ -61,9 +61,9 @@ export default class ListPresenter {
     this.#pointPresenters.clear();
   }
 
-  #handlePointChange = (updatedPoint) => {
+  #handlePointChange = (updatedPoint, updatedDestination, offers) => {
     this.#points = updateItem(this.#points, updatedPoint);
-    this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint});
+    this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint, destination: updatedDestination, offers: offers});
   };
 
   #handleModeChange = () => {
