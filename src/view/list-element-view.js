@@ -32,7 +32,7 @@ const createListElementTemplate = (point, destination, offers) => /*html*/`<li c
   <ul class="event__selected-offers">
     ${getOffersTemplate(offers)}
   </ul>
-  <button class="event__favorite-btn event__favorite-btn--${point.isFavorite ? 'active' : ''}" type="button">
+  <button class="event__favorite-btn ${point.isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
     <span class="visually-hidden">Add to favorite</span>
     <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
       <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"></path>
@@ -49,14 +49,17 @@ export default class ListElementView extends AbstractView{
   #destination;
   #offers;
   #onPointButtonClick;
+  #onFavoriteButtonClick;
 
-  constructor(point, destination, offers, onPointButtonClick) {
+  constructor(point, destination, offers, onPointButtonClick, onFavoriteButtonClick) {
     super();
     this.#point = point;
     this.#destination = destination;
     this.#offers = offers;
     this.#onPointButtonClick = onPointButtonClick;
+    this.#onFavoriteButtonClick = onFavoriteButtonClick;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlePointButtonClick);
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#handleFavoriteButtonClick);
   }
 
   get template() {
@@ -66,5 +69,10 @@ export default class ListElementView extends AbstractView{
   #handlePointButtonClick = (evt) => {
     evt.preventDefault();
     this.#onPointButtonClick();
+  };
+
+  #handleFavoriteButtonClick = (evt) => {
+    evt.preventDefault();
+    this.#onFavoriteButtonClick();
   };
 }

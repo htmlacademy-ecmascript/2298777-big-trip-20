@@ -1,4 +1,5 @@
 import { getRandomArrayElement } from '../util/utils';
+import { nanoid } from 'nanoid';
 
 const points = [
   {
@@ -54,7 +55,10 @@ const points = [
   }
 ];
 
-const getRandomPoint = () => getRandomArrayElement(points);
+const getRandomPoint = () => ({
+  uniqueId: nanoid(),
+  ...getRandomArrayElement(points)
+});
 
 
 export default getRandomPoint;

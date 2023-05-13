@@ -42,7 +42,9 @@ export default class HeaderPresenter {
             titleArray.push(item.name);
           }
         });
-      return titleArray.join(' — ');
+      return titleArray.length > 3
+        ? `${titleArray[0]} &mdash; ... &mdash; ${titleArray[titleArray.length - 1]}`
+        : titleArray.join(' &mdash; ');
     };
 
     const createDateFromTo = () => {
