@@ -34,18 +34,19 @@ export default class ListPresenter {
     }
   }
 
-  renderPoints({points = this.#points, destinations = this.#destinations, offers = this.#offers} = {}) {
+  renderPoints() {
     for(let i = 0; i < NUMBER_OF_LIST_ELEMENTS; i++) {
       const point = new PointPresenter({
         pointContainer: this.#listView,
         onPointChange: this.#handlePointChange,
         onModeChange: this.#handleModeChange,
-        point: points[i],
-        destination: destinations[i],
-        offers: offers[i],
       });
-      point.init({});
-      this.#pointPresenters.set(points[i].uniqueId, point);
+      point.init({
+        point: this.#points[i],
+        destination: this.#destinations[i],
+        offers: this.#offers[i],
+      });
+      this.#pointPresenters.set(this.#points[i].uniqueId, point);
     }
   }
 
@@ -54,9 +55,9 @@ export default class ListPresenter {
     this.#pointPresenters.clear();
   }
 
-  #handlePointChange = (updatedPoint) => {
+  #handlePointChange = (updatedPoint, updatedDestination, offers) => {
     this.#points = updateItem(this.#points, updatedPoint);
-    this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint});
+    this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint, destination: updatedDestination, offers: offers});
   };
 
   #handleModeChange = () => {
