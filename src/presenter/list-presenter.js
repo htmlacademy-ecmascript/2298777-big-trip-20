@@ -7,6 +7,7 @@ import { updateItem } from '../util/utils';
 import { sort } from '../util/sorts';
 import { SortTypes } from '../consts';
 
+
 const NUMBER_OF_LIST_ELEMENTS = 4;
 
 export default class ListPresenter {
