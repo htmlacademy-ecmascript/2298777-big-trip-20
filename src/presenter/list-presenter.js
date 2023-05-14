@@ -4,9 +4,8 @@ import SortView from '../view/sort-view';
 import EmptyListView from '../view/list-empty-view';
 import PointPresenter from './point-presenter';
 import { updateItem } from '../util/utils';
-import { sort } from '../util/sorts';
 import { SortTypes } from '../consts';
-
+import { getDiffInSeconds } from '../util/utils';
 
 const NUMBER_OF_LIST_ELEMENTS = 4;
 
@@ -74,13 +73,27 @@ export default class ListPresenter {
     this.#pointPresenters.forEach((pointPresenter) => pointPresenter.resetView());
   };
 
+  #sortPoints = (sortType) => {
+    switch (sortType) {
+      case SortTypes.TIME:
+        this.#points = this.#points.slice().sort((a, b) => getDiffInSeconds(b.dateTo, b.dateFrom) - getDiffInSeconds(a.dateTo, a.dateFrom));
+        break;
+      case SortTypes.PRICE:
+        this.#points = this.#points.slice().sort((a, b) => b.basePrice - a.basePrice);
+        break;
+      default:
+        this.#points = [...this.#originalPoints];
+    }
+  };
+
+
   #handleSortChange = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
     }
     this.#currentSortType = sortType;
     this.#points = [...this.#originalPoints];
-    this.#points = sort[sortType](this.#points);
+    this.#sortPoints(sortType);
     this.destroy();
     this.renderPoints();
   };
