@@ -4,8 +4,8 @@ import { getDiffInSeconds } from './utils';
 const sort = {
   [SortTypes.DAY]: (events) => events,
   [SortTypes.EVENT]: (events) => events,
-  [SortTypes.TIME]: (events) => events.slice().sort((a, b) => getDiffInSeconds(a.dateTo, a.dateFrom) - getDiffInSeconds(b.dateTo, b.dateFrom)),
-  [SortTypes.PRICE]: (events) => events.slice().sort((a, b) => a.basePrice - b.basePrice),
+  [SortTypes.TIME]: (events) => events.slice().sort((a, b) => getDiffInSeconds(b.dateTo, b.dateFrom) - getDiffInSeconds(a.dateTo, a.dateFrom)),
+  [SortTypes.PRICE]: (events) => events.slice().sort((a, b) => b.basePrice - a.basePrice),
   [SortTypes.OFFERS]: (events) => (events),
 };
 
