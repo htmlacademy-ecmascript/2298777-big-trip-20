@@ -1,6 +1,6 @@
 import { Types, DateFormats } from '../consts';
 import { humanizeDate } from '../util/utils';
-import AbstractView from '../framework/view/abstract-view';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 
 const createEventTypesTemplate = (type) =>
   Object.values(Types).map((value) => /*html*/`<div class="event__type-item">
@@ -87,28 +87,49 @@ const createEditPointTemplate = (point, destination, offers) => /*html*/`<li cla
 </form>
 </li>`;
 
-export default class EditPointView extends AbstractView {
+export default class EditPointView extends AbstractStatefulView {
+  #onPointButtonClick;
+  #onFormSubmit;
+  #getOffers;
   #point;
   #destination;
   #offers;
-  #onPointButtonClick;
 
-  constructor(point, destination, offers, onPointButtonClick) {
+  constructor(point, destination, offers, onPointButtonClick, onFormSubmit, getOffers) {
     super();
     this.#point = point;
     this.#destination = destination;
     this.#offers = offers;
+    this._setState({point, destination, offers});
     this.#onPointButtonClick = onPointButtonClick;
+    this.#onFormSubmit = onFormSubmit;
+    this.#getOffers = getOffers;
+    this._restoreHandlers();
+  }
+
+  _restoreHandlers() {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlePointButtonClick);
-    this.element.addEventListener('submit', this.#handlePointButtonClick);
+    this.element.addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#handleTypeChange);
   }
 
   get template() {
-    return createEditPointTemplate(this.#point, this.#destination, this.#offers);
+    return createEditPointTemplate(this._state.point, this._state.destination, this._state.offers);
   }
 
   #handlePointButtonClick = (evt) => {
     evt.preventDefault();
+    this.updateElement({point: this.#point, destination: this.#destination, offers: this.#offers});
     this.#onPointButtonClick();
+  };
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this.#onFormSubmit(this._state);
+  };
+
+  #handleTypeChange = (evt) => {
+    evt.preventDefault();
+    this.updateElement({point: {...this._state.point, type: evt.target.value}, offers: this.#getOffers(evt.target.value)});
   };
 }

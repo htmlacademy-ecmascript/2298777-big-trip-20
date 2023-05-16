@@ -3,7 +3,7 @@ import ListView from '../view/list-view';
 import SortView from '../view/sort-view';
 import EmptyListView from '../view/list-empty-view';
 import PointPresenter from './point-presenter';
-import { updateItem } from '../util/utils';
+import { updateItemById, updateItemByUniqueId } from '../util/utils';
 import { SortTypes } from '../consts';
 import { getDiffInSeconds } from '../util/utils';
 
@@ -16,7 +16,9 @@ export default class ListPresenter {
   #points;
   #originalPoints;
   #destinations;
+  #originalDestinations;
   #offers;
+  #offersWithTypes;
   #pointPresenters = new Map();
   #currentSortType = SortTypes.DAY;
 
@@ -25,8 +27,10 @@ export default class ListPresenter {
     this.#pointsModel = pointsModel;
     this.#points = [...this.#pointsModel.getPoints()];
     this.#originalPoints = [...this.#pointsModel.getPoints()];
+    this.#originalDestinations = [...this.#pointsModel.getDestinationsInfo()];
     this.#destinations = [...this.#pointsModel.getDestinationsInfo()];
     this.#offers = [...this.#pointsModel.getOffers()];
+    this.#offersWithTypes = [...this.#pointsModel.getOffersWithTypes()];
   }
 
   init() {
@@ -48,6 +52,7 @@ export default class ListPresenter {
         pointContainer: this.#listView,
         onPointChange: this.#handlePointChange,
         onModeChange: this.#handleModeChange,
+        allOffers: this.#offersWithTypes,
       });
       point.init({
         point: this.#points[i],
@@ -64,8 +69,10 @@ export default class ListPresenter {
   }
 
   #handlePointChange = (updatedPoint, updatedDestination, offers) => {
-    this.#points = updateItem(this.#points, updatedPoint);
-    this.#originalPoints = updateItem(this.#originalPoints, updatedPoint);
+    this.#points = updateItemByUniqueId(this.#points, updatedPoint);
+    this.#destinations = updateItemById(this.#destinations, updatedDestination);
+    this.#originalPoints = updateItemByUniqueId(this.#originalPoints, updatedPoint);
+    this.#originalDestinations = updateItemById(this.#originalDestinations, updatedDestination);
     this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint, destination: updatedDestination, offers: offers});
   };
 
@@ -77,12 +84,15 @@ export default class ListPresenter {
     switch (sortType) {
       case SortTypes.TIME:
         this.#points = this.#points.slice().sort((a, b) => getDiffInSeconds(b.dateTo, b.dateFrom) - getDiffInSeconds(a.dateTo, a.dateFrom));
+        this.#destinations = this.#destinations.slice().sort((a, b) => getDiffInSeconds(b.dateTo, b.dateFrom) - getDiffInSeconds(a.dateTo, a.dateFrom));
         break;
       case SortTypes.PRICE:
         this.#points = this.#points.slice().sort((a, b) => b.basePrice - a.basePrice);
+        this.#destinations = this.#destinations.slice().sort((a, b) => b.basePrice - a.basePrice);
         break;
       default:
         this.#points = [...this.#originalPoints];
+        this.#destinations = [...this.#originalDestinations];
     }
   };
 
@@ -93,6 +103,7 @@ export default class ListPresenter {
     }
     this.#currentSortType = sortType;
     this.#points = [...this.#originalPoints];
+    this.#destinations = [...this.#originalDestinations];
     this.#sortPoints(sortType);
     this.destroy();
     this.renderPoints();

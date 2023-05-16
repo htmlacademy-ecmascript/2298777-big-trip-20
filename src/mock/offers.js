@@ -63,4 +63,6 @@ const getOfferById = (type, ids) => {
   return offerById;
 };
 
-export default getOfferById;
+const getAllOffers = () => offers;
+
+export {getOfferById, getAllOffers};

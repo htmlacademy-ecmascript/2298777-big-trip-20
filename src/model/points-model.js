@@ -1,5 +1,5 @@
-import getDestinationById from '../mock/destinations';
-import getOfferById from '../mock/offers';
+import {getDestinationById} from '../mock/destinations';
+import {getOfferById, getAllOffers} from '../mock/offers';
 import getRandomPoint from '../mock/points';
 
 export default class PointsModel {
@@ -10,7 +10,7 @@ export default class PointsModel {
   }
 
   getDestinationsInfo() {
-    return this.#points.map((point) => getDestinationById(point.destination));
+    return this.#points.map((point) => ({...getDestinationById(point.destination), dateFrom: point.dateFrom, dateTo: point.dateTo, basePrice: point.basePrice}));
   }
 
   getDeparturesInfo() {
@@ -19,5 +19,9 @@ export default class PointsModel {
 
   getOffers() {
     return this.#points.map((point) => getOfferById(point.type, point.offers));
+  }
+
+  getOffersWithTypes() {
+    return getAllOffers();
   }
 }
