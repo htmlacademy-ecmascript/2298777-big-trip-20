@@ -140,7 +140,7 @@ export default class EditPointView extends AbstractStatefulView {
   #handleDestinationChange = (evt) => {
     evt.preventDefault();
     const newDestination = {...this._state.destinations.find((destination) =>
-      destination.name === evt.target.value) || {id: this._state.destination.id, name: evt.target.value, description: '', pictures: []},
+      destination.name === evt.target.value) || this._state.destination,
     dateFrom: this._state.point.dateFrom, dateTo: this._state.point.dateTo, basePrice: this._state.point.basePrice, uniqueId: this._state.point.uniqueId};
     this.updateElement({point: {...this._state.point, destination: newDestination.id }, destination: newDestination});
   };
