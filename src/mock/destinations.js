@@ -74,4 +74,6 @@ const destinations = [
 
 const getDestinationById = (id) => destinations.find((destination) => destination.id === id);
 
-export {getDestinationById};
+const getDestinations = () => destinations;
+
+export {getDestinationById, getDestinations};

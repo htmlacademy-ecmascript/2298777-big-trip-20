@@ -2,6 +2,8 @@ import { Types, DateFormats } from '../consts';
 import { humanizeDate } from '../util/utils';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 
+const createDatalistTemplate = (destinations) => destinations.map((destination) => /*html*/`<option value="${destination.name}"></option>`).join('');
+
 const createEventTypesTemplate = (type) =>
   Object.values(Types).map((value) => /*html*/`<div class="event__type-item">
     <input id="event-type-${value}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${value}" ${type === value ? 'checked=""' : ''}>
@@ -17,7 +19,7 @@ const createEventOfferSelectors = (offers) => offers.map((offer) => /*html*/`<di
   </label>
 </div>`).join('');
 
-const createEditPointTemplate = (point, destination, offers) => /*html*/`<li class="trip-events__item">
+const createEditPointTemplate = (point, destination, offers, destinations) => /*html*/`<li class="trip-events__item">
 <form class="event event--edit" action="#" method="post">
   <header class="event__header">
     <div class="event__type-wrapper">
@@ -42,9 +44,7 @@ const createEditPointTemplate = (point, destination, offers) => /*html*/`<li cla
       </label>
       <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
       <datalist id="destination-list-1">
-        <option value="Amsterdam"></option>
-        <option value="Geneva"></option>
-        <option value="Chamonix"></option>
+        ${createDatalistTemplate(destinations)}
       </datalist>
     </div>
 
@@ -94,13 +94,15 @@ export default class EditPointView extends AbstractStatefulView {
   #point;
   #destination;
   #offers;
+  #destinations;
 
-  constructor(point, destination, offers, onPointButtonClick, onFormSubmit, getOffers) {
+  constructor(point, destination, offers, onPointButtonClick, onFormSubmit, getOffers, destinations) {
     super();
     this.#point = point;
     this.#destination = destination;
     this.#offers = offers;
-    this._setState({point, destination, offers});
+    this.#destinations = destinations;
+    this._setState({point, destination, offers, destinations});
     this.#onPointButtonClick = onPointButtonClick;
     this.#onFormSubmit = onFormSubmit;
     this.#getOffers = getOffers;
@@ -111,15 +113,17 @@ export default class EditPointView extends AbstractStatefulView {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlePointButtonClick);
     this.element.addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#handleTypeChange);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleDestinationChange);
+    this.element.querySelector('.event__input--price').addEventListener('change', this.#handlePriceChange);
   }
 
   get template() {
-    return createEditPointTemplate(this._state.point, this._state.destination, this._state.offers);
+    return createEditPointTemplate(this._state.point, this._state.destination, this._state.offers, this._state.destinations);
   }
 
   #handlePointButtonClick = (evt) => {
     evt.preventDefault();
-    this.updateElement({point: this.#point, destination: this.#destination, offers: this.#offers});
+    this.updateElement({point: this.#point, destination: this.#destination, offers: this.#offers, destinations: this.#destinations});
     this.#onPointButtonClick();
   };
 
@@ -131,5 +135,18 @@ export default class EditPointView extends AbstractStatefulView {
   #handleTypeChange = (evt) => {
     evt.preventDefault();
     this.updateElement({point: {...this._state.point, type: evt.target.value}, offers: this.#getOffers(evt.target.value)});
+  };
+
+  #handleDestinationChange = (evt) => {
+    evt.preventDefault();
+    const newDestination = {...this._state.destinations.find((destination) =>
+      destination.name === evt.target.value) || {id: this._state.destination.id, name: evt.target.value, description: '', pictures: []},
+    dateFrom: this._state.point.dateFrom, dateTo: this._state.point.dateTo, basePrice: this._state.point.basePrice, uniqueId: this._state.point.uniqueId};
+    this.updateElement({point: {...this._state.point, destination: newDestination.id }, destination: newDestination});
+  };
+
+  #handlePriceChange = (evt) => {
+    evt.preventDefault();
+    this.updateElement({point: {...this._state.point, basePrice: evt.target.value}, destination: {...this._state.destination, basePrice: evt.target.value}});
   };
 }

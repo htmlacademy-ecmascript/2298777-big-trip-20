@@ -3,7 +3,7 @@ import ListView from '../view/list-view';
 import SortView from '../view/sort-view';
 import EmptyListView from '../view/list-empty-view';
 import PointPresenter from './point-presenter';
-import { updateItemById, updateItemByUniqueId } from '../util/utils';
+import { updateItemByUniqueId } from '../util/utils';
 import { SortTypes } from '../consts';
 import { getDiffInSeconds } from '../util/utils';
 
@@ -21,6 +21,7 @@ export default class ListPresenter {
   #offersWithTypes;
   #pointPresenters = new Map();
   #currentSortType = SortTypes.DAY;
+  #allDestinations;
 
   constructor(listContainer, pointsModel) {
     this.#listContainer = listContainer;
@@ -31,6 +32,7 @@ export default class ListPresenter {
     this.#destinations = [...this.#pointsModel.getDestinationsInfo()];
     this.#offers = [...this.#pointsModel.getOffers()];
     this.#offersWithTypes = [...this.#pointsModel.getOffersWithTypes()];
+    this.#allDestinations = [...this.#pointsModel.getAllDestinations()];
   }
 
   init() {
@@ -53,6 +55,7 @@ export default class ListPresenter {
         onPointChange: this.#handlePointChange,
         onModeChange: this.#handleModeChange,
         allOffers: this.#offersWithTypes,
+        allDestinations: this.#allDestinations,
       });
       point.init({
         point: this.#points[i],
@@ -70,9 +73,9 @@ export default class ListPresenter {
 
   #handlePointChange = (updatedPoint, updatedDestination, offers) => {
     this.#points = updateItemByUniqueId(this.#points, updatedPoint);
-    this.#destinations = updateItemById(this.#destinations, updatedDestination);
+    this.#destinations = updateItemByUniqueId(this.#destinations, updatedDestination);
     this.#originalPoints = updateItemByUniqueId(this.#originalPoints, updatedPoint);
-    this.#originalDestinations = updateItemById(this.#originalDestinations, updatedDestination);
+    this.#originalDestinations = updateItemByUniqueId(this.#originalDestinations, updatedDestination);
     this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint, destination: updatedDestination, offers: offers});
   };
 

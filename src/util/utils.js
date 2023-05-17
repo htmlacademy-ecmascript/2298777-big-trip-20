@@ -10,6 +10,4 @@ const getDiffInSeconds = (dateTo, dateFrom) => dayjs(dateTo).diff(dayjs(dateFrom
 
 const updateItemByUniqueId = (items, update) => items.map((item) => item.uniqueId === update.uniqueId ? update : item);
 
-const updateItemById = (items, update) => items.map((item) => item.id === update.id ? update : item);
-
-export { getRandomArrayElement, humanizeDate, getTimeDiff, getDiffInSeconds, updateItemByUniqueId, updateItemById };
+export { getRandomArrayElement, humanizeDate, getTimeDiff, getDiffInSeconds, updateItemByUniqueId };
