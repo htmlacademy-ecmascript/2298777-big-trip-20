@@ -14,7 +14,7 @@ const createEventTypesTemplate = (type) =>
 
 const createEventOfferSelectors = (offers, allOffers) => allOffers.map((offer) => /*html*/`<div class="event__offer-selector">
   <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title}-1" type="checkbox" name="event-offer-${offer.title}"
-  ${offers.some((item) => item.id === offer.id) ? 'checked=""' : ''}>
+  ${offers.some((item) => item.id === offer.id) ? 'checked=""' : ''} data-id="${offer.id}">
   <label class="event__offer-label" for="event-offer-${offer.title}-1">
     <span class="event__offer-title">${offer.title}</span>
     &plus;&euro;&nbsp;
@@ -22,7 +22,7 @@ const createEventOfferSelectors = (offers, allOffers) => allOffers.map((offer) =
   </label>
 </div>`).join('');
 
-const createEditPointTemplate = (point, destination, offers, destinations, allOffers) => /*html*/`<li class="trip-events__item">
+const createEditPointTemplate = (point, destinations, allOffers) => /*html*/`<li class="trip-events__item">
 <form class="event event--edit" action="#" method="post">
   <header class="event__header">
     <div class="event__type-wrapper">
@@ -45,7 +45,7 @@ const createEditPointTemplate = (point, destination, offers, destinations, allOf
       <label class="event__label  event__type-output" for="event-destination-1">
         ${point.type}
       </label>
-      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${point.name}" list="destination-list-1">
       <datalist id="destination-list-1">
         ${createDatalistTemplate(destinations)}
       </datalist>
@@ -78,16 +78,16 @@ const createEditPointTemplate = (point, destination, offers, destinations, allOf
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-        ${createEventOfferSelectors(offers, allOffers)}
+        ${createEventOfferSelectors(point.offers, allOffers)}
       </div>
     </section>
 
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${destination.description}</p>
+      <p class="event__destination-description">${point.description}</p>
       <div class="event__photos-container">
         <div class="event__photos-tape">
-          ${createPictureTemplate(destination.pictures)}
+          ${createPictureTemplate(point.pictures)}
         </div>
       </div>
     </section>
@@ -103,16 +103,16 @@ export default class EditPointView extends AbstractStatefulView {
   #destination;
   #offers;
   #destinations;
-  #allOfers;
+  #allOffers;
 
   constructor(point, destination, offers, onPointButtonClick, onFormSubmit, getOffers, destinations) {
     super();
     this.#point = point;
     this.#destination = destination;
-    this.#offers = offers;
-    this.#allOfers = getOffers(point.type);
+    this.#offers = offers.offers;
+    this.#allOffers = getOffers(point.type);
     this.#destinations = destinations;
-    this._setState({point, destination, offers, destinations, allOfers: this.#allOfers});
+    this._setState(this.parsePointToState(point, destination, offers.offers));
     this.#onPointButtonClick = onPointButtonClick;
     this.#onFormSubmit = onFormSubmit;
     this.#getOffers = getOffers;
@@ -129,46 +129,103 @@ export default class EditPointView extends AbstractStatefulView {
   }
 
   get template() {
-    return createEditPointTemplate(this._state.point, this._state.destination, this._state.offers, this._state.destinations, this._state.allOfers);
+    return createEditPointTemplate(this._state, this.#destinations, this.#allOffers);
   }
 
   #handlePointButtonClick = (evt) => {
     evt.preventDefault();
-    this.updateElement({point: this.#point, destination: this.#destination, offers: this.#offers, destinations: this.#destinations});
+    this.#allOffers = this.#getOffers(this.#point.type);
+    this.updateElement(this.parsePointToState(this.#point, this.#destination, this.#offers));
     this.#onPointButtonClick();
   };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmit(this._state);
+    this.#onFormSubmit(this.parseStateToPoint(this._state));
   };
 
   #handleTypeChange = (evt) => {
     evt.preventDefault();
-    this.updateElement({point: {...this._state.point, type: evt.target.value, offers: []}, offers: [], allOfers: this.#getOffers(evt.target.value)});
+    this.#allOffers = this.#getOffers(evt.target.value);
+    this.updateElement({
+      type: evt.target.value,
+      offers: [],
+    });
   };
 
   #handleDestinationChange = (evt) => {
     evt.preventDefault();
-    const newDestination = {...this._state.destinations.find((destination) =>
-      destination.name === evt.target.value) || this._state.destination,
-    dateFrom: this._state.point.dateFrom, dateTo: this._state.point.dateTo, basePrice: this._state.point.basePrice, uniqueId: this._state.point.uniqueId};
-    this.updateElement({point: {...this._state.point, destination: newDestination.id }, destination: newDestination});
+    const newDestination = this.#destinations.find((destination) =>
+      destination.name === evt.target.value) || this.parseStateToPoint(this._state).destination;
+    this.updateElement({
+      destination: newDestination.id,
+      name: newDestination.name,
+      description: newDestination.description,
+      pictures: newDestination.pictures,
+    });
   };
 
   #handlePriceChange = (evt) => {
     evt.preventDefault();
-    this.updateElement({point: {...this._state.point, basePrice: evt.target.value}, destination: {...this._state.destination, basePrice: evt.target.value}});
+    this._setState({
+      basePrice: Number(evt.target.value),
+    });
   };
 
   #handleOfferChange = (evt) => {
     evt.preventDefault();
     const newOffers = [...this._state.offers];
     if (evt.target.checked) {
-      newOffers.push(this._state.allOfers.find((offer) => offer.title === evt.target.name.split('-')[2]));
+      const offer = this.#allOffers.find((item) => String(item.id) === evt.target.dataset.id);
+      newOffers.push(offer);
     } else {
-      newOffers.splice(newOffers.findIndex((offer) => offer.title === evt.target.name.split('-')[2]), 1);
+      newOffers.splice(newOffers.findIndex((offer) => String(offer.id) === evt.target.dataset.id), 1);
     }
-    this.updateElement({point: {...this._state.point, offers: newOffers}, offers: newOffers});
+    this._setState({
+      offers: newOffers,
+    });
   };
+
+
+  parsePointToState(point, destination, offers) {
+    return {
+      ...destination,
+      ...point,
+      id: point.id,
+      offers,
+    };
+  }
+
+  parseStateToPoint(state) {
+    return {
+      point:{
+        id: state.id,
+        basePrice: state.basePrice,
+        dateFrom: state.dateFrom,
+        dateTo: state.dateTo,
+        destination: state.destination,
+        isFavorite: state.isFavorite,
+        offers: state.offers,
+        type: state.type,
+        uniqueId: state.uniqueId,
+      },
+      destination: {
+        description: state.description,
+        id: state.destination,
+        name: state.name,
+        pictures: state.pictures,
+        dateFrom: state.dateFrom,
+        dateTo: state.dateTo,
+        basePrice: state.basePrice,
+        uniqueId: state.uniqueId,
+      },
+      offers: {
+        offers: state.offers,
+        uniqueId: state.uniqueId,
+        dateFrom: state.dateFrom,
+        dateTo: state.dateTo,
+        basePrice: state.basePrice,
+      }
+    };
+  }
 }

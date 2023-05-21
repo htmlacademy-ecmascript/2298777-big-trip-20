@@ -55,7 +55,7 @@ export default class ListElementView extends AbstractView{
     super();
     this.#point = point;
     this.#destination = destination;
-    this.#offers = offers;
+    this.#offers = offers.offers;
     this.#onPointButtonClick = onPointButtonClick;
     this.#onFavoriteButtonClick = onFavoriteButtonClick;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlePointButtonClick);

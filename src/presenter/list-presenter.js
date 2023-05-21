@@ -17,6 +17,7 @@ export default class ListPresenter {
   #originalPoints;
   #destinations;
   #originalDestinations;
+  #originalOffers;
   #offers;
   #offersWithTypes;
   #pointPresenters = new Map();
@@ -31,6 +32,7 @@ export default class ListPresenter {
     this.#originalDestinations = [...this.#pointsModel.getDestinationsInfo()];
     this.#destinations = [...this.#pointsModel.getDestinationsInfo()];
     this.#offers = [...this.#pointsModel.getOffers()];
+    this.#originalOffers = [...this.#pointsModel.getOffers()];
     this.#offersWithTypes = [...this.#pointsModel.getOffersWithTypes()];
     this.#allDestinations = [...this.#pointsModel.getAllDestinations()];
   }
@@ -74,6 +76,8 @@ export default class ListPresenter {
   #handlePointChange = (updatedPoint, updatedDestination, offers) => {
     this.#points = updateItemByUniqueId(this.#points, updatedPoint);
     this.#destinations = updateItemByUniqueId(this.#destinations, updatedDestination);
+    this.#offers = updateItemByUniqueId(this.#offers, offers);
+    this.#originalOffers = updateItemByUniqueId(this.#originalOffers, offers);
     this.#originalPoints = updateItemByUniqueId(this.#originalPoints, updatedPoint);
     this.#originalDestinations = updateItemByUniqueId(this.#originalDestinations, updatedDestination);
     this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint, destination: updatedDestination, offers: offers});
@@ -88,14 +92,17 @@ export default class ListPresenter {
       case SortTypes.TIME:
         this.#points = this.#points.slice().sort((a, b) => getDiffInSeconds(b.dateTo, b.dateFrom) - getDiffInSeconds(a.dateTo, a.dateFrom));
         this.#destinations = this.#destinations.slice().sort((a, b) => getDiffInSeconds(b.dateTo, b.dateFrom) - getDiffInSeconds(a.dateTo, a.dateFrom));
+        this.#offers = this.#offers.slice().sort((a, b) => getDiffInSeconds(b.dateTo, b.dateFrom) - getDiffInSeconds(a.dateTo, a.dateFrom));
         break;
       case SortTypes.PRICE:
         this.#points = this.#points.slice().sort((a, b) => b.basePrice - a.basePrice);
         this.#destinations = this.#destinations.slice().sort((a, b) => b.basePrice - a.basePrice);
+        this.#offers = this.#offers.slice().sort((a, b) => b.basePrice - a.basePrice);
         break;
       default:
         this.#points = [...this.#originalPoints];
         this.#destinations = [...this.#originalDestinations];
+        this.#offers = [...this.#originalOffers];
     }
   };
 
@@ -107,6 +114,7 @@ export default class ListPresenter {
     this.#currentSortType = sortType;
     this.#points = [...this.#originalPoints];
     this.#destinations = [...this.#originalDestinations];
+    this.#offers = [...this.#originalOffers];
     this.#sortPoints(sortType);
     this.destroy();
     this.renderPoints();
