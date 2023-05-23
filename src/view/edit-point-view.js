@@ -109,10 +109,10 @@ export default class EditPointView extends AbstractStatefulView {
     super();
     this.#point = point;
     this.#destination = destination;
-    this.#offers = offers.offers;
+    this.#offers = offers;
     this.#allOffers = getOffers(point.type);
     this.#destinations = destinations;
-    this._setState(this.parsePointToState(point, destination, offers.offers));
+    this._setState(this.parsePointToState(point, destination, offers));
     this.#onPointButtonClick = onPointButtonClick;
     this.#onFormSubmit = onFormSubmit;
     this.#getOffers = getOffers;
@@ -214,18 +214,8 @@ export default class EditPointView extends AbstractStatefulView {
         id: state.destination,
         name: state.name,
         pictures: state.pictures,
-        dateFrom: state.dateFrom,
-        dateTo: state.dateTo,
-        basePrice: state.basePrice,
-        uniqueId: state.uniqueId,
       },
-      offers: {
-        offers: state.offers,
-        uniqueId: state.uniqueId,
-        dateFrom: state.dateFrom,
-        dateTo: state.dateTo,
-        basePrice: state.basePrice,
-      }
+      offers: state.offers,
     };
   }
 }

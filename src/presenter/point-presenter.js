@@ -93,8 +93,8 @@ export default class PointPresenter {
     this.#changePointToEditForm();
   };
 
-  #onFavoriteButtonClick = () => {
-    this.#onPointChange({...this.#point, isFavorite: !this.#point.isFavorite}, this.#destination, this.#offers);
+  #onFavoriteButtonClick = (point, destination, offers) => {
+    this.#onPointChange({...point, isFavorite: !point.isFavorite}, destination, offers);
   };
 
   #onFormSubmit = (state) => {

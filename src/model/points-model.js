@@ -10,7 +10,7 @@ export default class PointsModel {
   }
 
   getDestinationsInfo() {
-    return this.#points.map((point) => ({...getDestinationById(point.destination), dateFrom: point.dateFrom, dateTo: point.dateTo, basePrice: point.basePrice, uniqueId: point.uniqueId}));
+    return this.#points.map((point) => getDestinationById(point.destination));
   }
 
   getDeparturesInfo() {
@@ -18,7 +18,7 @@ export default class PointsModel {
   }
 
   getOffers() {
-    return this.#points.map((point) => ({offers: getOfferById(point.type, point.offers), uniqueId: point.uniqueId, dateFrom: point.dateFrom, dateTo: point.dateTo, basePrice: point.basePrice}));
+    return this.#points.map((point) => getOfferById(point.type, point.offers));
   }
 
   getOffersWithTypes() {

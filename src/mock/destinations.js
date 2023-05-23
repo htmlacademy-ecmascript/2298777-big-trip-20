@@ -66,6 +66,13 @@ const destinations = [
     pictures: [
     ]
   },
+  {
+    id: '6',
+    description: 'Lyon, is a beautiful city, a true asian pearl, with crowded streets.',
+    name: 'Lyon',
+    pictures: [
+    ]
+  }
 ];
 
 const getDestinationById = (id) => destinations.find((destination) => destination.id === id);

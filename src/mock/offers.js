@@ -53,6 +53,16 @@ const offers = [
         price: 40
       },
     ]
+  },
+  {
+    type: 'drive',
+    offers: [
+      {
+        id: 1,
+        title: 'Rent a car',
+        price: 200
+      },
+    ]
   }
 ];
 
