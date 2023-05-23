@@ -14,7 +14,7 @@ const createEventTypesTemplate = (type) =>
 
 const createEventOfferSelectors = (offers, allOffers) => allOffers.map((offer) => /*html*/`<div class="event__offer-selector">
   <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title}-1" type="checkbox" name="event-offer-${offer.title}"
-  ${offers.some((item) => item.id === offer.id) ? 'checked=""' : ''} data-id="${offer.id}">
+  ${offers.some((item) => item === offer.id) ? 'checked=""' : ''} data-id="${offer.id}">
   <label class="event__offer-label" for="event-offer-${offer.title}-1">
     <span class="event__offer-title">${offer.title}</span>
     &plus;&euro;&nbsp;
@@ -22,7 +22,7 @@ const createEventOfferSelectors = (offers, allOffers) => allOffers.map((offer) =
   </label>
 </div>`).join('');
 
-const createEditPointTemplate = (point, destinations, allOffers) => /*html*/`<li class="trip-events__item">
+const createEditPointTemplate = (point, destinations, allOffers, destination) => /*html*/`<li class="trip-events__item">
 <form class="event event--edit" action="#" method="post">
   <header class="event__header">
     <div class="event__type-wrapper">
@@ -45,7 +45,7 @@ const createEditPointTemplate = (point, destinations, allOffers) => /*html*/`<li
       <label class="event__label  event__type-output" for="event-destination-1">
         ${point.type}
       </label>
-      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${point.name}" list="destination-list-1">
+      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
       <datalist id="destination-list-1">
         ${createDatalistTemplate(destinations)}
       </datalist>
@@ -84,10 +84,10 @@ const createEditPointTemplate = (point, destinations, allOffers) => /*html*/`<li
 
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${point.description}</p>
+      <p class="event__destination-description">${destination.description}</p>
       <div class="event__photos-container">
         <div class="event__photos-tape">
-          ${createPictureTemplate(point.pictures)}
+          ${createPictureTemplate(destination.pictures)}
         </div>
       </div>
     </section>
@@ -100,19 +100,17 @@ export default class EditPointView extends AbstractStatefulView {
   #onFormSubmit;
   #getOffers;
   #point;
-  #destination;
-  #offers;
   #destinations;
   #allOffers;
+  #destination;
 
-  constructor(point, destination, offers, onPointButtonClick, onFormSubmit, getOffers, destinations) {
+  constructor(point, onPointButtonClick, onFormSubmit, getOffers, destinations) {
     super();
     this.#point = point;
-    this.#destination = destination;
-    this.#offers = offers;
     this.#allOffers = getOffers(point.type);
     this.#destinations = destinations;
-    this._setState(this.parsePointToState(point, destination, offers));
+    this.#destination = destinations.find((destination) => destination.id === point.destination);
+    this._setState(EditPointView.parsePointToState(point));
     this.#onPointButtonClick = onPointButtonClick;
     this.#onFormSubmit = onFormSubmit;
     this.#getOffers = getOffers;
@@ -129,19 +127,19 @@ export default class EditPointView extends AbstractStatefulView {
   }
 
   get template() {
-    return createEditPointTemplate(this._state, this.#destinations, this.#allOffers);
+    return createEditPointTemplate(this._state, this.#destinations, this.#allOffers, this.#destination);
   }
 
   #handlePointButtonClick = (evt) => {
     evt.preventDefault();
     this.#allOffers = this.#getOffers(this.#point.type);
-    this.updateElement(this.parsePointToState(this.#point, this.#destination, this.#offers));
+    this.updateElement(EditPointView.parsePointToState(this.#point));
     this.#onPointButtonClick();
   };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmit(this.parseStateToPoint(this._state));
+    this.#onFormSubmit(EditPointView.parseStateToPoint(this._state));
   };
 
   #handleTypeChange = (evt) => {
@@ -155,14 +153,18 @@ export default class EditPointView extends AbstractStatefulView {
 
   #handleDestinationChange = (evt) => {
     evt.preventDefault();
-    const newDestination = this.#destinations.find((destination) =>
-      destination.name === evt.target.value) || this.parseStateToPoint(this._state).destination;
-    this.updateElement({
-      destination: newDestination.id,
-      name: newDestination.name,
-      description: newDestination.description,
-      pictures: newDestination.pictures,
-    });
+    let newDestination;
+    try {
+      newDestination = this.#destinations.find((destination) =>
+        destination.name === evt.target.value).id;
+    } catch (err) {
+      newDestination = this._state.destination;
+    } finally {
+      this.#destination = this.#destinations.find((destination) => destination.id === newDestination);
+      this.updateElement({
+        destination: newDestination,
+      });
+    }
   };
 
   #handlePriceChange = (evt) => {
@@ -177,7 +179,7 @@ export default class EditPointView extends AbstractStatefulView {
     const newOffers = [...this._state.offers];
     if (evt.target.checked) {
       const offer = this.#allOffers.find((item) => String(item.id) === evt.target.dataset.id);
-      newOffers.push(offer);
+      newOffers.push(offer.id);
     } else {
       newOffers.splice(newOffers.findIndex((offer) => String(offer.id) === evt.target.dataset.id), 1);
     }
@@ -187,35 +189,15 @@ export default class EditPointView extends AbstractStatefulView {
   };
 
 
-  parsePointToState(point, destination, offers) {
+  static parsePointToState(point) {
     return {
-      ...destination,
       ...point,
-      id: point.id,
-      offers,
     };
   }
 
-  parseStateToPoint(state) {
+  static parseStateToPoint(state) {
     return {
-      point:{
-        id: state.id,
-        basePrice: state.basePrice,
-        dateFrom: state.dateFrom,
-        dateTo: state.dateTo,
-        destination: state.destination,
-        isFavorite: state.isFavorite,
-        offers: state.offers,
-        type: state.type,
-        uniqueId: state.uniqueId,
-      },
-      destination: {
-        description: state.description,
-        id: state.destination,
-        name: state.name,
-        pictures: state.pictures,
-      },
-      offers: state.offers,
+      ...state,
     };
   }
 }

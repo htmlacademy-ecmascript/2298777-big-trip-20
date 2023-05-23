@@ -3,7 +3,7 @@ import ListView from '../view/list-view';
 import SortView from '../view/sort-view';
 import EmptyListView from '../view/list-empty-view';
 import PointPresenter from './point-presenter';
-import { updateItemByUniqueId, getIndexByUniqueId, getDiffInSeconds } from '../util/utils';
+import { updateItemByUniqueId, getDiffInSeconds } from '../util/utils';
 import { SortTypes } from '../consts';
 
 const NUMBER_OF_LIST_ELEMENTS = 4;
@@ -60,8 +60,6 @@ export default class ListPresenter {
       });
       point.init({
         point: this.#points[i],
-        destination: this.#destinations[i],
-        offers: this.#offers[i],
       });
       this.#pointPresenters.set(this.#points[i].uniqueId, point);
     }
@@ -72,15 +70,10 @@ export default class ListPresenter {
     this.#pointPresenters.clear();
   }
 
-  #handlePointChange = (updatedPoint, updatedDestination, offers) => {
+  #handlePointChange = (updatedPoint) => {
     this.#points = updateItemByUniqueId(this.#points, updatedPoint);
-    const index = getIndexByUniqueId(this.#points, updatedPoint.uniqueId);
-    this.#offers[index] = offers;
-    this.#originalOffers[index] = offers;
-    this.#destinations[index] = updatedDestination;
-    this.#originalDestinations[index] = updatedDestination;
     this.#originalPoints = updateItemByUniqueId(this.#originalPoints, updatedPoint);
-    this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint, destination: updatedDestination, offers: offers});
+    this.#pointPresenters.get(updatedPoint.uniqueId).init({point: updatedPoint});
   };
 
   #handleModeChange = () => {

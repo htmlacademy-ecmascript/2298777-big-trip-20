@@ -15,8 +15,6 @@ export default class PointPresenter {
   #pointContainer;
   #onPointChange;
   #onModeChange;
-  #point;
-  #destination;
   #offers;
   #allOffers;
   #allDestinations;
@@ -29,24 +27,20 @@ export default class PointPresenter {
     this.#allDestinations = allDestinations;
   }
 
-  init({point, destination, offers}) {
-
-    this.#point = point;
-    this.#destination = destination;
-    this.#offers = offers;
+  init({point}) {
 
     if (!this.#initiated) {
-      this.#pointView = new ListElementView(point, destination, offers, this.#onPointButtonClick, this.#onFavoriteButtonClick);
-      this.#pointEditView = new EditPointView(point, destination, offers, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
+      this.#pointView = new ListElementView(point, this.#onPointButtonClick, this.#onFavoriteButtonClick, this.#getTypeOffers, this.#allDestinations);
+      this.#pointEditView = new EditPointView(point, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
       render(this.#pointView, this.#pointContainer.element);
       this.#initiated = true;
       return;
     }
 
     const prevPointView = this.#pointView;
-    this.#pointView = new ListElementView(point, destination, offers, this.#onPointButtonClick, this.#onFavoriteButtonClick);
+    this.#pointView = new ListElementView(point, this.#onPointButtonClick, this.#onFavoriteButtonClick, this.#getTypeOffers, this.#allDestinations);
     const prevPointEditView = this.#pointEditView;
-    this.#pointEditView = new EditPointView(point, destination, offers, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
+    this.#pointEditView = new EditPointView(point,this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
     if (this.#pointContainer.element.contains(prevPointView.element)) {
       replace(this.#pointView, prevPointView);
     } else {
@@ -93,12 +87,12 @@ export default class PointPresenter {
     this.#changePointToEditForm();
   };
 
-  #onFavoriteButtonClick = (point, destination, offers) => {
-    this.#onPointChange({...point, isFavorite: !point.isFavorite}, destination, offers);
+  #onFavoriteButtonClick = (point) => {
+    this.#onPointChange({...point, isFavorite: !point.isFavorite});
   };
 
   #onFormSubmit = (state) => {
-    this.#onPointChange(state.point, state.destination, state.offers);
+    this.#onPointChange(state);
     this.#changeEditFormToPoint();
   };
 
