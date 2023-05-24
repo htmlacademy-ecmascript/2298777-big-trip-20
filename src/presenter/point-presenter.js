@@ -15,38 +15,35 @@ export default class PointPresenter {
   #pointContainer;
   #onPointChange;
   #onModeChange;
-  #point;
-  #destination;
   #offers;
+  #allOffers;
+  #allDestinations;
 
-  constructor({pointContainer, onPointChange, onModeChange}) {
+  constructor({pointContainer, onPointChange, onModeChange, allOffers, allDestinations}) {
     this.#pointContainer = pointContainer;
     this.#onPointChange = onPointChange;
     this.#onModeChange = onModeChange;
+    this.#allOffers = allOffers;
+    this.#allDestinations = allDestinations;
   }
 
-
-  init({point, destination, offers}) {
-
-    this.#point = point;
-    this.#destination = destination;
-    this.#offers = offers;
+  init({point}) {
 
     if (!this.#initiated) {
-      this.#pointView = new ListElementView(point, destination, offers, this.#onPointButtonClick, this.#onFavoriteButtonClick);
-      this.#pointEditView = new EditPointView(point, destination, offers, this.#onEditPointButtonClick);
+      this.#pointView = new ListElementView(point, this.#onPointButtonClick, this.#onFavoriteButtonClick, this.#getTypeOffers, this.#allDestinations);
+      this.#pointEditView = new EditPointView(point, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
       render(this.#pointView, this.#pointContainer.element);
       this.#initiated = true;
       return;
     }
 
-    if (this.#pointContainer.element.contains(this.#pointView.element)) {
-      const prevPointView = this.#pointView;
-      this.#pointView = new ListElementView(point, destination, offers, this.#onPointButtonClick, this.#onFavoriteButtonClick);
+    const prevPointView = this.#pointView;
+    this.#pointView = new ListElementView(point, this.#onPointButtonClick, this.#onFavoriteButtonClick, this.#getTypeOffers, this.#allDestinations);
+    const prevPointEditView = this.#pointEditView;
+    this.#pointEditView = new EditPointView(point,this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
+    if (this.#pointContainer.element.contains(prevPointView.element)) {
       replace(this.#pointView, prevPointView);
     } else {
-      const prevPointEditView = this.#pointEditView;
-      this.#pointEditView = new EditPointView(point, destination, offers, this.#onEditPointButtonClick);
       replace(this.#pointEditView, prevPointEditView);
     }
   }
@@ -90,7 +87,21 @@ export default class PointPresenter {
     this.#changePointToEditForm();
   };
 
-  #onFavoriteButtonClick = () => {
-    this.#onPointChange({...this.#point, isFavorite: !this.#point.isFavorite}, this.#destination, this.#offers);
+  #onFavoriteButtonClick = (point) => {
+    this.#onPointChange({...point, isFavorite: !point.isFavorite});
+  };
+
+  #onFormSubmit = (state) => {
+    this.#onPointChange(state);
+    this.#changeEditFormToPoint();
+  };
+
+  #getTypeOffers = (type) => {
+    try {
+      this.#offers = this.#allOffers.find((offer) => offer.type === type).offers;
+    } catch (err) {
+      this.#offers = [];
+    }
+    return this.#offers;
   };
 }

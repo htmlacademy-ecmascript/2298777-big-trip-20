@@ -2,11 +2,11 @@ import { humanizeDate, getTimeDiff } from '../util/utils';
 import { DateFormats } from '../consts.js';
 import AbstractView from '../framework/view/abstract-view';
 
-const getOffersTemplate = (offers) => offers.map((offer) => /*html*/
+const getOffersTemplate = (offers, activeOffers) => activeOffers.map((offer) => /*html*/
   `<li class="event__offer">
-    <span class="event__offer-title">${offer.title}</span>
+    <span class="event__offer-title">${offers.find((item) => item.id === offer).title}</span>
     +€&nbsp;
-    <span class="event__offer-price">${offer.price}</span>
+    <span class="event__offer-price">${offers.find((item) => item.id === offer).price}</span>
   </li>`).join('');
 
 
@@ -30,7 +30,7 @@ const createListElementTemplate = (point, destination, offers) => /*html*/`<li c
   </p>
   <h4 class="visually-hidden">Offers:</h4>
   <ul class="event__selected-offers">
-    ${getOffersTemplate(offers)}
+    ${getOffersTemplate(offers, point.offers)}
   </ul>
   <button class="event__favorite-btn ${point.isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
     <span class="visually-hidden">Add to favorite</span>
@@ -50,14 +50,18 @@ export default class ListElementView extends AbstractView{
   #offers;
   #onPointButtonClick;
   #onFavoriteButtonClick;
+  #getTypeOffers;
+  #allDestinations;
 
-  constructor(point, destination, offers, onPointButtonClick, onFavoriteButtonClick) {
+  constructor(point,onPointButtonClick, onFavoriteButtonClick, getTypeOffers, allDestinations) {
     super();
     this.#point = point;
-    this.#destination = destination;
-    this.#offers = offers;
     this.#onPointButtonClick = onPointButtonClick;
     this.#onFavoriteButtonClick = onFavoriteButtonClick;
+    this.#getTypeOffers = getTypeOffers;
+    this.#allDestinations = allDestinations;
+    this.#destination = this.#allDestinations.find((dest) => dest.id === this.#point.destination);
+    this.#offers = this.#getTypeOffers(this.#point.type);
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlePointButtonClick);
     this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#handleFavoriteButtonClick);
   }
@@ -73,6 +77,6 @@ export default class ListElementView extends AbstractView{
 
   #handleFavoriteButtonClick = (evt) => {
     evt.preventDefault();
-    this.#onFavoriteButtonClick();
+    this.#onFavoriteButtonClick(this.#point);
   };
 }

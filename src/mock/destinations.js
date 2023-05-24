@@ -64,14 +64,19 @@ const destinations = [
     description: 'Cannes, is a beautiful city, a true asian pearl, with crowded streets.',
     name: 'Cannes',
     pictures: [
-      {
-        src: 'http://picsum.photos/300/200?r=0.0762563005163317',
-        description: 'Cannes parliament building'
-      }
     ]
   },
+  {
+    id: '6',
+    description: 'Lyon, is a beautiful city, a true asian pearl, with crowded streets.',
+    name: 'Lyon',
+    pictures: [
+    ]
+  }
 ];
 
 const getDestinationById = (id) => destinations.find((destination) => destination.id === id);
 
-export default getDestinationById;
+const getDestinations = () => destinations;
+
+export {getDestinationById, getDestinations};
