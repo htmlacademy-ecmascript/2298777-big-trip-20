@@ -133,9 +133,9 @@ export default class EditPointView extends AbstractStatefulView {
     this.element.querySelector('.event__input--price').addEventListener('change', this.#handlePriceChange);
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#handleOfferChange);
     this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
-      {enableTime: true, dateFormat: DATE_FORMAT_FOR_INPUT, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange});
+      {enableTime: true, dateFormat: DATE_FORMAT_FOR_INPUT, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, onClose: this.#removeEventError});
     this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
-      {enableTime: true, dateFormat: DATE_FORMAT_FOR_INPUT, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange});
+      {enableTime: true, dateFormat: DATE_FORMAT_FOR_INPUT, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, onClose: this.#removeEventError});
   }
 
   get template() {
@@ -214,8 +214,11 @@ export default class EditPointView extends AbstractStatefulView {
   }
 
   #handleDateFromChange = ([userDate]) => {
+    this.#removeEventError();
     if (getDiffInSeconds(userDate, this._state.dateTo) > 0) {
-      userDate = this._state.dateFrom;
+      this.element.querySelector('.event__details').appendChild(this.#createErrorElement('Start date must be before end date'));
+      this.#startDatePicker.setDate(this._state.dateFrom);
+      return;
     }
     this._setState({
       dateFrom: userDate,
@@ -223,12 +226,21 @@ export default class EditPointView extends AbstractStatefulView {
   };
 
   #handleDateToChange = ([userDate]) => {
+    this.#removeEventError();
     if (getDiffInSeconds(userDate, this._state.dateFrom) < 0) {
-      userDate = this._state.dateTo;
+      this.element.querySelector('.event__details').appendChild(this.#createErrorElement('End date must be after start date'));
+      this.#endDatePicker.setDate(this._state.dateTo);
+      return;
     }
     this._setState({
       dateTo: userDate,
     });
+  };
+
+  #removeEventError = () => {
+    if (this.element.querySelector('.event__error')) {
+      this.element.querySelector('.event__error').remove();
+    }
   };
 
   removeElement() {
@@ -244,4 +256,12 @@ export default class EditPointView extends AbstractStatefulView {
       this.#endDatePicker = null;
     }
   }
+
+  #createErrorElement = (message) => {
+    const errorElement = document.createElement('div');
+    errorElement.classList.add('event__error');
+    errorElement.style = 'z-index: 100; top: 0; left: 0; right: 0; padding: 10px; background-color: red; color: white; text-align: center;';
+    errorElement.textContent = message;
+    return errorElement;
+  };
 }
