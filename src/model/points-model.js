@@ -1,31 +1,50 @@
-import {getDestinationById, getDestinations} from '../mock/destinations';
-import {getOfferById, getAllOffers} from '../mock/offers';
 import getRandomPoint from '../mock/points';
+import Observable from '../framework/observable';
 
-export default class PointsModel {
+export default class PointsModel extends Observable {
   #points = Array.from({length: 4}, getRandomPoint);
 
-  getPoints() {
+  get points() {
     return this.#points;
   }
 
-  getDestinationsInfo() {
-    return this.#points.map((point) => getDestinationById(point.destination));
+  updatePoint(updateType, update) {
+    const index = this.#points.findIndex((point) => point.uniqueId === update.uniqueId);
+
+    if (index === -1) {
+      throw new Error('Can\'t update nonexistent task');
+    }
+
+    this.#points = [
+      ...this.#points.slice(0, index),
+      update,
+      ...this.#points.slice(index + 1),
+    ];
+
+    this._notify(updateType, update);
   }
 
-  getDeparturesInfo() {
-    return this.#points.map((point) => getDestinationById(point.id));
+  addPoint(updateType, update) {
+    this.#points = [
+      update,
+      ...this.#points,
+    ];
+
+    this._notify(updateType, update);
   }
 
-  getOffers() {
-    return this.#points.map((point) => getOfferById(point.type, point.offers));
-  }
+  deletePoint(updateType, update) {
+    const index = this.#points.findIndex((point) => point.uniqueId === update.uniqueId);
 
-  getOffersWithTypes() {
-    return getAllOffers();
-  }
+    if (index === -1) {
+      throw new Error('Can\'t delete nonexistent task');
+    }
 
-  getAllDestinations() {
-    return getDestinations();
+    this.#points = [
+      ...this.#points.slice(0, index),
+      ...this.#points.slice(index + 1),
+    ];
+
+    this._notify(updateType);
   }
 }

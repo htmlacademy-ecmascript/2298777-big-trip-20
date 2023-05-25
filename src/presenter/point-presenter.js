@@ -1,6 +1,7 @@
 import { remove, render, replace } from '../framework/render';
 import ListElementView from '../view/list-element-view';
 import EditPointView from '../view/edit-point-view';
+import { UserAction, UpdateType } from '../consts';
 
 const Modes = {
   DEFAULT: 'DEFAULT',
@@ -40,7 +41,7 @@ export default class PointPresenter {
     const prevPointView = this.#pointView;
     this.#pointView = new ListElementView(point, this.#onPointButtonClick, this.#onFavoriteButtonClick, this.#getTypeOffers, this.#allDestinations);
     const prevPointEditView = this.#pointEditView;
-    this.#pointEditView = new EditPointView(point,this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
+    this.#pointEditView = new EditPointView(point, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
     if (this.#pointContainer.element.contains(prevPointView.element)) {
       replace(this.#pointView, prevPointView);
     } else {
@@ -88,11 +89,19 @@ export default class PointPresenter {
   };
 
   #onFavoriteButtonClick = (point) => {
-    this.#onPointChange({...point, isFavorite: !point.isFavorite});
+    this.#onPointChange(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
+      {...point, isFavorite: !point.isFavorite}
+    );
   };
 
   #onFormSubmit = (state) => {
-    this.#onPointChange(state);
+    this.#onPointChange(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
+      state,
+    );
     this.#changeEditFormToPoint();
   };
 

@@ -9,16 +9,18 @@ export default class HeaderPresenter {
   #headerContainer;
   #filterContainer;
   #pointModel;
+  #destinationsModel;
 
-  constructor(headerContainer, filterContainer, pointModel) {
+  constructor(headerContainer, filterContainer, pointModel, destinationsModel) {
     this.#headerContainer = headerContainer;
     this.#filterContainer = filterContainer;
     this.#pointModel = pointModel;
+    this.#destinationsModel = destinationsModel;
   }
 
   init() {
     render(new FilterView(this.#generateFilters()), this.#filterContainer);
-    if (this.#pointModel.getPoints().length !== 0) {
+    if (this.#pointModel.points.length !== 0) {
       render(new TripInfoView(this.#generateMainInfo()), this.#headerContainer, RenderPosition.AFTERBEGIN);
     }
   }
@@ -26,13 +28,13 @@ export default class HeaderPresenter {
   #generateFilters() {
     return Object.entries(filter).map(([filterName, filterFunction]) => ({
       name: filterName,
-      filter: filterFunction(this.#pointModel.getPoints()),
+      filter: filterFunction(this.#pointModel.points),
     }));
   }
 
   #generateMainInfo() {
     const createTitle = () => {
-      const destinations = this.#pointModel.getDestinationsInfo();
+      const destinations = this.#destinationsModel.currentDestinations;
 
       const titleArray = [];
       destinations
@@ -48,7 +50,7 @@ export default class HeaderPresenter {
     };
 
     const createDateFromTo = () => {
-      const points = this.#pointModel.getPoints();
+      const points = this.#pointModel.points;
       const dateFrom = points[0].dateFrom;
       const dateTo = points[points.length - 1].dateTo;
       return `${humanizeDate(dateFrom, DateFormats.MONTH_WITH_DAY)} — ${humanizeDate(dateTo, DateFormats.MONTH_WITH_DAY)}`;
@@ -57,7 +59,7 @@ export default class HeaderPresenter {
     return {
       title: createTitle(),
       dateFromTo: createDateFromTo(),
-      price: this.#pointModel.getPoints().reduce((acc, point) => acc + point.basePrice, 0),
+      price: this.#pointModel.points.reduce((acc, point) => acc + point.basePrice, 0),
     };
   }
 }
