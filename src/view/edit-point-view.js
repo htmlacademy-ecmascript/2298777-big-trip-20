@@ -217,7 +217,7 @@ export default class EditPointView extends AbstractStatefulView {
     if (getDiffInSeconds(userDate, this._state.dateTo) > 0) {
       userDate = this._state.dateFrom;
     }
-    this.updateElement({
+    this._setState({
       dateFrom: userDate,
     });
   };
@@ -226,7 +226,7 @@ export default class EditPointView extends AbstractStatefulView {
     if (getDiffInSeconds(userDate, this._state.dateFrom) < 0) {
       userDate = this._state.dateTo;
     }
-    this.updateElement({
+    this._setState({
       dateTo: userDate,
     });
   };
