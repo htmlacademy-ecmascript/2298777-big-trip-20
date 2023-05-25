@@ -32,7 +32,7 @@ export default class PointPresenter {
 
     if (!this.#initiated) {
       this.#pointView = new ListElementView(point, this.#onPointButtonClick, this.#onFavoriteButtonClick, this.#getTypeOffers, this.#allDestinations);
-      this.#pointEditView = new EditPointView(point, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
+      this.#pointEditView = new EditPointView(point, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations, this.#handleDeleteClick);
       render(this.#pointView, this.#pointContainer.element);
       this.#initiated = true;
       return;
@@ -41,7 +41,7 @@ export default class PointPresenter {
     const prevPointView = this.#pointView;
     this.#pointView = new ListElementView(point, this.#onPointButtonClick, this.#onFavoriteButtonClick, this.#getTypeOffers, this.#allDestinations);
     const prevPointEditView = this.#pointEditView;
-    this.#pointEditView = new EditPointView(point, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations);
+    this.#pointEditView = new EditPointView(point, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations, this.#handleDeleteClick);
     if (this.#pointContainer.element.contains(prevPointView.element)) {
       replace(this.#pointView, prevPointView);
     } else {
@@ -112,5 +112,13 @@ export default class PointPresenter {
       this.#offers = [];
     }
     return this.#offers;
+  };
+
+  #handleDeleteClick = (point) => {
+    this.#onPointChange(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      point,
+    );
   };
 }

@@ -6,8 +6,6 @@ import PointPresenter from './point-presenter';
 import { getDiffInSeconds } from '../util/utils';
 import { SortTypes, UpdateType, UserAction } from '../consts';
 
-const NUMBER_OF_LIST_ELEMENTS = 4;
-
 export default class ListPresenter {
   #listContainer;
   #pointsModel;
@@ -55,7 +53,7 @@ export default class ListPresenter {
   }
 
   renderPoints() {
-    for(let i = 0; i < NUMBER_OF_LIST_ELEMENTS; i++) {
+    for(let i = 0; i < this.points.length; i++) {
       const point = new PointPresenter({
         pointContainer: this.#listView,
         onPointChange: this.#handleViewAction,
