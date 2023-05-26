@@ -1,10 +1,13 @@
-import { render } from '../framework/render';
+import { render, RenderPosition, remove } from '../framework/render';
 import ListView from '../view/list-view';
 import SortView from '../view/sort-view';
 import EmptyListView from '../view/list-empty-view';
 import PointPresenter from './point-presenter';
-import { getDiffInSeconds } from '../util/utils';
+import { getDiffInSeconds, humanizeDate } from '../util/utils';
 import { SortTypes, UpdateType, UserAction } from '../consts';
+import { DateFormats } from '../consts';
+import TripInfoView from '../view/trip-main-info-view';
+import { filter } from '../util/filters';
 
 export default class ListPresenter {
   #listContainer;
@@ -16,40 +19,98 @@ export default class ListPresenter {
   #pointPresenters = new Map();
   #currentSortType = SortTypes.DAY;
   #allDestinations;
+  #headerContainer;
+  #sortComponent = null;
+  #mainInfoComponent = null;
+  #filterModel;
 
-  constructor(listContainer, pointsModel, destinationsModel, offersModel) {
+  constructor({ listContainer, pointsModel, destinationsModel, offersModel, headerContainer, filterModel }) {
     this.#listContainer = listContainer;
     this.#pointsModel = pointsModel;
     this.#destinationsModel = destinationsModel;
     this.#offersModel = offersModel;
+    this.#headerContainer = headerContainer;
+    this.#filterModel = filterModel;
     this.#offersWithTypes = [...offersModel.allOffers];
     this.#allDestinations = [...destinationsModel.allDestinations];
     this.#pointsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get points() {
-    return this.#sortPoints(this.#currentSortType, 'points');
+    const filteredPoints = filter[this.#filterModel.filter](this.#pointsModel.points);
+
+    return this.#sortPoints({ sortType: this.#currentSortType, returnType: 'points', points: filteredPoints });
   }
 
   get destinations() {
-    return this.#sortPoints(this.#currentSortType, 'destinations');
+    return this.#sortPoints({ sortType: this.#currentSortType, returnType: 'destinations'});
   }
 
   get offers() {
-    return this.#sortPoints(this.#currentSortType, 'offers');
+    return this.#sortPoints({sortType: this.#currentSortType, returnType: 'offers'});
   }
 
   init() {
+    render(this.#listView, this.#listContainer);
+    this.renderWindow();
+  }
+
+  renderWindow() {
     if (this.points.length === 0) {
       render(new EmptyListView(), this.#listContainer);
-    } else {
-      render(new SortView({
+      return;
+    }
+
+    if (this.#mainInfoComponent === null) {
+      this.#mainInfoComponent = new TripInfoView(this.#generateMainInfo());
+      render(this.#mainInfoComponent, this.#headerContainer, RenderPosition.AFTERBEGIN);
+    }
+
+    if (this.#sortComponent === null) {
+      this.#sortComponent = new SortView({
         sorts: Object.values(SortTypes),
         onSortChange: this.#handleSortChange,
-      }), this.#listContainer);
-      render(this.#listView, this.#listContainer);
-      this.renderPoints();
+      });
+      render(this.#sortComponent, this.#listContainer, RenderPosition.AFTERBEGIN);
     }
+
+    this.renderPoints();
+  }
+
+  #generateMainInfo() {
+    const createTitle = () => {
+      const destinations = this.points.map((point) =>
+        this.#allDestinations.find((item) => item.id === point.destination)
+      );
+
+      const titleArray = [];
+
+      destinations
+        .map((item) => {
+          if (!titleArray.includes(item.name) ||
+            (titleArray.length !== 0 && item.name !== titleArray[titleArray.length - 1])) {
+            titleArray.push(item.name);
+          }
+        });
+
+      return titleArray.length > 3
+        ? `${titleArray[0]} &mdash; ... &mdash; ${titleArray[titleArray.length - 1]}`
+        : titleArray.join(' &mdash; ');
+    };
+
+    const createDateFromTo = () => {
+      const points = this.points;
+      const dateFrom = points[0].dateFrom;
+      const dateTo = points[points.length - 1].dateTo;
+      return `${humanizeDate(dateFrom, DateFormats.MONTH_WITH_DAY)} — ${humanizeDate(dateTo, DateFormats.MONTH_WITH_DAY)}`;
+    };
+
+    return {
+      title: createTitle(),
+      dateFromTo: createDateFromTo(),
+      price: this.points.reduce((acc, point) => acc + point.basePrice, 0),
+    };
   }
 
   renderPoints() {
@@ -68,12 +129,19 @@ export default class ListPresenter {
     }
   }
 
-  destroy({resetSortType = false} = {}) {
+  destroy({resetSortType = false, resetSortView = false} = {}) {
     this.#pointPresenters.forEach((pointPresenter) => pointPresenter.destroy());
     this.#pointPresenters.clear();
+    remove(this.#mainInfoComponent);
+    this.#mainInfoComponent = null;
 
     if (resetSortType) {
       this.#currentSortType = SortTypes.DAY;
+    }
+
+    if (resetSortView) {
+      remove(this.#sortComponent);
+      this.#sortComponent = null;
     }
   }
 
@@ -81,9 +149,9 @@ export default class ListPresenter {
     this.#pointPresenters.forEach((pointPresenter) => pointPresenter.resetView());
   };
 
-  #sortPoints = (sortType, returnType) => {
-    const sortable = [...this.#pointsModel.points].map(
-      (value, index) => [this.#pointsModel.points[index], this.#destinationsModel.currentDestinations[index], this.#offersModel.activeOffers[index]]
+  #sortPoints = ({sortType, returnType, points = this.#pointsModel.points}) => {
+    const sortable = [...points].map(
+      (value, index) => [points[index], this.#destinationsModel.currentDestinations[index], this.#offersModel.activeOffers[index]]
     );
     switch (sortType) {
       case SortTypes.TIME:
@@ -102,16 +170,14 @@ export default class ListPresenter {
     }
   };
 
-
   #handleSortChange = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
     }
 
     this.#currentSortType = sortType;
-    //this.#sortPoints(sortType);
     this.destroy();
-    this.renderPoints();
+    this.renderWindow();
   };
 
   #handleModelEvent = (updateType, data) => {
@@ -121,11 +187,11 @@ export default class ListPresenter {
         break;
       case UpdateType.MINOR:
         this.destroy();
-        this.renderPoints();
+        this.renderWindow();
         break;
       case UpdateType.MAJOR:
-        this.destroy({resetSortType: true});
-        this.renderPoints();
+        this.destroy({resetSortType: true, resetSortView: true});
+        this.renderWindow();
         break;
     }
   };
