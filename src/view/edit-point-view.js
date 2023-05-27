@@ -1,6 +1,10 @@
 import { Types, DateFormats } from '../consts';
 import { humanizeDate } from '../util/utils';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import flatpickr from 'flatpickr';
+import flatpickrOptions from '../flatpickr-options';
+
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const createPictureTemplate = (pictures) => pictures.map((picture) => /*html*/`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`).join('');
 
@@ -103,6 +107,8 @@ export default class EditPointView extends AbstractStatefulView {
   #destinations;
   #allOffers;
   #destination;
+  #startDatePicker;
+  #endDatePicker;
 
   constructor(point, onPointButtonClick, onFormSubmit, getOffers, destinations) {
     super();
@@ -124,6 +130,10 @@ export default class EditPointView extends AbstractStatefulView {
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleDestinationChange);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#handlePriceChange);
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#handleOfferChange);
+    this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
+    this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
   }
 
   get template() {
@@ -199,5 +209,31 @@ export default class EditPointView extends AbstractStatefulView {
     return {
       ...state,
     };
+  }
+
+  #handleDateFromChange = ([userDate]) => {
+    this._setState({
+      dateFrom: userDate,
+    });
+  };
+
+  #handleDateToChange = ([userDate]) => {
+    this._setState({
+      dateTo: userDate,
+    });
+  };
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#startDatePicker) {
+      this.#startDatePicker.destroy();
+      this.#startDatePicker = null;
+    }
+
+    if (this.#endDatePicker) {
+      this.#endDatePicker.destroy();
+      this.#endDatePicker = null;
+    }
   }
 }

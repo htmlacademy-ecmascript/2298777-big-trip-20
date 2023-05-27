@@ -1,9 +1,9 @@
 const DateFormats = {
   MONTH_WITH_DAY: 'MMMM DD',
   NORMAL: 'YYYY-MM-DD',
-  TIME: 'HH:MM',
-  FULL_DATE: 'YYYY-MM-DDTHH:MM',
-  SLASH_FULL_DATE: 'DD/MM/YY HH:MM',
+  TIME: 'HH:mm',
+  FULL_DATE: 'YYYY-MM-DDTHH:mm',
+  SLASH_FULL_DATE: 'DD/MM/YY HH:mm',
 };
 
 const Types = {
