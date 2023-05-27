@@ -31,8 +31,21 @@ export default class PointPresenter {
   init({point}) {
 
     if (!this.#initiated) {
-      this.#pointView = new ListElementView(point, this.#onPointButtonClick, this.#onFavoriteButtonClick, this.#getTypeOffers, this.#allDestinations);
-      this.#pointEditView = new EditPointView(point, this.#onEditPointButtonClick, this.#onFormSubmit, this.#getTypeOffers, this.#allDestinations, this.#handleDeleteClick);
+      this.#pointView = new ListElementView({
+        point,
+        onPointButtonClick: this.#onPointButtonClick,
+        onFavoriteButtonClick: this.#onFavoriteButtonClick,
+        getTypeOffers: this.#getTypeOffers,
+        allDestinations: this.#allDestinations
+      });
+      this.#pointEditView = new EditPointView({
+        point,
+        onPointButtonClick: this.#onEditPointButtonClick,
+        onFormSubmit: this.#onFormSubmit,
+        getOffers: this.#getTypeOffers,
+        destinations: this.#allDestinations,
+        onDeleteClick: this.#handleDeleteClick,
+      });
       render(this.#pointView, this.#pointContainer.element);
       this.#initiated = true;
       return;

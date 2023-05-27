@@ -53,7 +53,7 @@ export default class ListElementView extends AbstractView{
   #getTypeOffers;
   #allDestinations;
 
-  constructor(point,onPointButtonClick, onFavoriteButtonClick, getTypeOffers, allDestinations) {
+  constructor({point, onPointButtonClick, onFavoriteButtonClick, getTypeOffers, allDestinations}) {
     super();
     this.#point = point;
     this.#onPointButtonClick = onPointButtonClick;

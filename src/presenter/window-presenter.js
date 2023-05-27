@@ -5,9 +5,10 @@ import EmptyListView from '../view/list-empty-view';
 import PointPresenter from './point-presenter';
 import { getDiffInSeconds, humanizeDate } from '../util/utils';
 import { SortTypes, UpdateType, UserAction } from '../consts';
-import { DateFormats } from '../consts';
+import { DateFormats, FilterTypes } from '../consts';
 import TripInfoView from '../view/trip-main-info-view';
 import { filter } from '../util/filters';
+import NewPointPresenter from './new-point-presenter';
 
 export default class ListPresenter {
   #listContainer;
@@ -43,16 +44,9 @@ export default class ListPresenter {
     return this.#sortPoints({ sortType: this.#currentSortType, returnType: 'points', points: filteredPoints });
   }
 
-  get destinations() {
-    return this.#sortPoints({ sortType: this.#currentSortType, returnType: 'destinations'});
-  }
-
-  get offers() {
-    return this.#sortPoints({sortType: this.#currentSortType, returnType: 'offers'});
-  }
-
   init() {
     render(this.#listView, this.#listContainer);
+    document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#handleAddNewPointClick);
     this.renderWindow();
   }
 
@@ -106,10 +100,21 @@ export default class ListPresenter {
       return `${humanizeDate(dateFrom, DateFormats.MONTH_WITH_DAY)} — ${humanizeDate(dateTo, DateFormats.MONTH_WITH_DAY)}`;
     };
 
+    const getPrice = () => {
+      let basePrice = this.points.reduce((sum, point) => sum + point.basePrice, 0);
+      this.points.forEach((point) => {
+        const offers = this.#offersWithTypes.find((item) => item.type === point.type).offers;
+        offers.forEach((offer) => {
+          basePrice += point.offers.some((item) => item === offer.id) ? offer.price : 0;
+        });
+      });
+      return basePrice;
+    };
+
     return {
       title: createTitle(),
       dateFromTo: createDateFromTo(),
-      price: this.points.reduce((acc, point) => acc + point.basePrice, 0),
+      price: getPrice(),
     };
   }
 
@@ -129,11 +134,14 @@ export default class ListPresenter {
     }
   }
 
-  destroy({resetSortType = false, resetSortView = false} = {}) {
+  destroy({resetSortType = false, resetSortView = false, resetMainInfo = true} = {}) {
     this.#pointPresenters.forEach((pointPresenter) => pointPresenter.destroy());
     this.#pointPresenters.clear();
-    remove(this.#mainInfoComponent);
-    this.#mainInfoComponent = null;
+
+    if (resetMainInfo) {
+      remove(this.#mainInfoComponent);
+      this.#mainInfoComponent = null;
+    }
 
     if (resetSortType) {
       this.#currentSortType = SortTypes.DAY;
@@ -176,7 +184,7 @@ export default class ListPresenter {
     }
 
     this.#currentSortType = sortType;
-    this.destroy();
+    this.destroy({resetMainInfo: false});
     this.renderWindow();
   };
 
@@ -208,5 +216,19 @@ export default class ListPresenter {
         this.#pointsModel.deletePoint(updateType, update);
         break;
     }
+  };
+
+  #handleAddNewPointClick = () => {
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterTypes.EVERYTHING);
+    const addNewPointButton = document.querySelector('.trip-main__event-add-btn');
+    const newPointPresenter = new NewPointPresenter({
+      listContainer: this.#listView,
+      allDestinations: this.#allDestinations,
+      allOffers: this.#offersWithTypes,
+      onPointChange: this.#handleViewAction,
+      addNewPointButton,
+    });
+    addNewPointButton.disabled = true;
+    newPointPresenter.init();
   };
 }

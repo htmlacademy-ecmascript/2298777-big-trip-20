@@ -78,7 +78,7 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
     </button>
   </header>
   <section class="event__details">
-    <section class="event__section  event__section--offers">
+    <section class="event__section  event__section--offers ${allOffers.length === 0 ? 'visually-hidden' : ''}">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
@@ -86,7 +86,7 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
       </div>
     </section>
 
-    <section class="event__section  event__section--destination">
+    <section class="event__section  event__section--destination ${destination.description === '' ? 'visually-hidden' : ''}">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destination.description}</p>
       <div class="event__photos-container">
@@ -111,7 +111,7 @@ export default class EditPointView extends AbstractStatefulView {
   #endDatePicker;
   #onDeleteClick;
 
-  constructor(point, onPointButtonClick, onFormSubmit, getOffers, destinations, onDeleteClick) {
+  constructor({point, onPointButtonClick, onFormSubmit, getOffers, destinations, onDeleteClick}) {
     super();
     this.#point = point;
     this.#allOffers = getOffers(point.type);

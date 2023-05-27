@@ -69,6 +69,9 @@ const offers = [
 // get offers by type and ids and return offers array
 const getOfferById = (type, ids) => {
   const offer = offers.find((item) => item.type === type);
+  if (!offer) {
+    return [];
+  }
   const offerById = offer.offers.filter((item) => ids.includes(item.id));
   return offerById;
 };

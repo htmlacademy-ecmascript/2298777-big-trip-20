@@ -1,11 +1,12 @@
 import getRandomPoint from '../mock/points';
 import Observable from '../framework/observable';
+import { getDiffInSeconds } from '../util/utils';
 
 export default class PointsModel extends Observable {
   #points = Array.from({length: 4}, getRandomPoint);
 
   get points() {
-    return this.#points;
+    return this.#points.sort((a, b) => getDiffInSeconds(a.dateFrom, b.dateFrom));
   }
 
   updatePoint(updateType, update) {
