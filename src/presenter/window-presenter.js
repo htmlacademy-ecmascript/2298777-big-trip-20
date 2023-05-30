@@ -9,6 +9,7 @@ import { DateFormats, FilterTypes } from '../consts';
 import TripInfoView from '../view/trip-main-info-view';
 import { filter } from '../util/filters';
 import NewPointPresenter from './new-point-presenter';
+import NewEventButtonView from '../view/new-event-button';
 
 export default class ListPresenter {
   #listContainer;
@@ -24,6 +25,7 @@ export default class ListPresenter {
   #sortComponent = null;
   #mainInfoComponent = null;
   #filterModel;
+  #emptyListComponent = null;
 
   constructor({ listContainer, pointsModel, destinationsModel, offersModel, headerContainer, filterModel }) {
     this.#listContainer = listContainer;
@@ -46,13 +48,16 @@ export default class ListPresenter {
 
   init() {
     render(this.#listView, this.#listContainer);
-    document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#handleAddNewPointClick);
+    render(new NewEventButtonView(this.#handleAddNewPointClick), this.#headerContainer);
     this.renderWindow();
   }
 
   renderWindow() {
-    if (this.points.length === 0) {
-      render(new EmptyListView(), this.#listContainer);
+    if (this.points.length === 0 && this.#emptyListComponent === null) {
+      this.#emptyListComponent = new EmptyListView();
+      render(this.#emptyListComponent, this.#listContainer);
+      return;
+    } else if (this.points.length === 0 && this.#emptyListComponent !== null) {
       return;
     }
 
@@ -103,8 +108,11 @@ export default class ListPresenter {
     const getPrice = () => {
       let basePrice = this.points.reduce((sum, point) => sum + point.basePrice, 0);
       this.points.forEach((point) => {
-        const offers = this.#offersWithTypes.find((item) => item.type === point.type).offers;
-        offers.forEach((offer) => {
+        const typeOffers = this.#offersWithTypes.find((item) => item.type === point.type);
+        if (typeOffers === undefined) {
+          return;
+        }
+        typeOffers.offers.forEach((offer) => {
           basePrice += point.offers.some((item) => item === offer.id) ? offer.price : 0;
         });
       });
@@ -135,6 +143,16 @@ export default class ListPresenter {
   }
 
   destroy({resetSortType = false, resetSortView = false, resetMainInfo = true} = {}) {
+    if (this.#emptyListComponent !== null) {
+      remove(this.#emptyListComponent);
+      this.#emptyListComponent = null;
+    }
+
+    if (this.points.length === 0) {
+      remove(this.#sortComponent);
+      this.#sortComponent = null;
+    }
+
     this.#pointPresenters.forEach((pointPresenter) => pointPresenter.destroy());
     this.#pointPresenters.clear();
 
@@ -218,9 +236,9 @@ export default class ListPresenter {
     }
   };
 
-  #handleAddNewPointClick = () => {
+  #handleAddNewPointClick = (evt) => {
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterTypes.EVERYTHING);
-    const addNewPointButton = document.querySelector('.trip-main__event-add-btn');
+    const addNewPointButton = evt.target;
     const newPointPresenter = new NewPointPresenter({
       listContainer: this.#listView,
       allDestinations: this.#allDestinations,

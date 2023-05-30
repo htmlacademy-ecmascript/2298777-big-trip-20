@@ -128,6 +128,7 @@ export default class PointPresenter {
   };
 
   #handleDeleteClick = (point) => {
+    document.removeEventListener('keydown', this.#onEscKeydown);
     this.#onPointChange(
       UserAction.DELETE_POINT,
       UpdateType.MINOR,
