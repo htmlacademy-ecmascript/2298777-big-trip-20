@@ -26,6 +26,7 @@ export default class ListPresenter {
   #mainInfoComponent = null;
   #filterModel;
   #emptyListComponent = null;
+  #newPointPresenter = null;
 
   constructor({ listContainer, pointsModel, destinationsModel, offersModel, headerContainer, filterModel }) {
     this.#listContainer = listContainer;
@@ -54,7 +55,7 @@ export default class ListPresenter {
 
   renderWindow() {
     if (this.points.length === 0 && this.#emptyListComponent === null) {
-      this.#emptyListComponent = new EmptyListView();
+      this.#emptyListComponent = new EmptyListView(this.#filterModel.filter);
       render(this.#emptyListComponent, this.#listContainer);
       return;
     } else if (this.points.length === 0 && this.#emptyListComponent !== null) {
@@ -143,6 +144,7 @@ export default class ListPresenter {
   }
 
   destroy({resetSortType = false, resetSortView = false, resetMainInfo = true} = {}) {
+    this.#pointPresenters.forEach((pointPresenter) => pointPresenter.resetView());
     if (this.#emptyListComponent !== null) {
       remove(this.#emptyListComponent);
       this.#emptyListComponent = null;
@@ -172,6 +174,10 @@ export default class ListPresenter {
   }
 
   #handleModeChange = () => {
+    if (this.#newPointPresenter !== null) {
+      this.#newPointPresenter.destroy();
+      this.#newPointPresenter = null;
+    }
     this.#pointPresenters.forEach((pointPresenter) => pointPresenter.resetView());
   };
 
@@ -239,7 +245,7 @@ export default class ListPresenter {
   #handleAddNewPointClick = (evt) => {
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterTypes.EVERYTHING);
     const addNewPointButton = evt.target;
-    const newPointPresenter = new NewPointPresenter({
+    this.#newPointPresenter = new NewPointPresenter({
       listContainer: this.#listView,
       allDestinations: this.#allDestinations,
       allOffers: this.#offersWithTypes,
@@ -247,6 +253,6 @@ export default class ListPresenter {
       addNewPointButton,
     });
     addNewPointButton.disabled = true;
-    newPointPresenter.init();
+    this.#newPointPresenter.init();
   };
 }

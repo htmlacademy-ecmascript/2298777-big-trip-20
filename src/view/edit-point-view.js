@@ -134,10 +134,7 @@ export default class EditPointView extends AbstractStatefulView {
     this.element.querySelector('.event__input--price').addEventListener('change', this.#handlePriceChange);
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#handleOfferChange);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#handleDeleteClick);
-    this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
-    this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
+    this.#initDatePickers();
   }
 
   get template() {
@@ -216,20 +213,40 @@ export default class EditPointView extends AbstractStatefulView {
   }
 
   #handleDateFromChange = ([userDate]) => {
+    this.#removeDatePickers();
     this._setState({
       dateFrom: userDate,
     });
+    this.#initDatePickers();
   };
 
   #handleDateToChange = ([userDate]) => {
+    this.#removeDatePickers();
     this._setState({
       dateTo: userDate,
     });
+    this.#initDatePickers();
   };
 
   removeElement() {
     super.removeElement();
 
+    this.#removeDatePickers();
+  }
+
+  #handleDeleteClick = (evt) => {
+    evt.preventDefault();
+    this.#onDeleteClick(EditPointView.parseStateToPoint(this._state));
+  };
+
+  #initDatePickers() {
+    this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
+    this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
+  }
+
+  #removeDatePickers() {
     if (this.#startDatePicker) {
       this.#startDatePicker.destroy();
       this.#startDatePicker = null;
@@ -240,9 +257,4 @@ export default class EditPointView extends AbstractStatefulView {
       this.#endDatePicker = null;
     }
   }
-
-  #handleDeleteClick = (evt) => {
-    evt.preventDefault();
-    this.#onDeleteClick(EditPointView.parseStateToPoint(this._state));
-  };
 }

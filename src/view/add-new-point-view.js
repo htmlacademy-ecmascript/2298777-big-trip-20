@@ -149,10 +149,7 @@ export default class AddNewPointView extends AbstractStatefulView {
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleDestinationChange);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#handlePriceChange);
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#handleOfferChange);
-    this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
-    this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
+    this.#initDatePickers();
   }
 
   #handleFormSubmit = (evt) => {
@@ -214,20 +211,35 @@ export default class AddNewPointView extends AbstractStatefulView {
   };
 
   #handleDateFromChange = ([userDate]) => {
+    this.#removeDatePickers();
     this._setState({
       dateFrom: userDate,
     });
+    this.#initDatePickers();
   };
 
   #handleDateToChange = ([userDate]) => {
+    this.#removeDatePickers();
     this._setState({
       dateTo: userDate,
     });
+    this.#initDatePickers();
   };
 
   removeElement() {
     super.removeElement();
 
+    this.#removeDatePickers();
+  }
+
+  #initDatePickers() {
+    this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
+    this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
+  }
+
+  #removeDatePickers() {
     if (this.#startDatePicker) {
       this.#startDatePicker.destroy();
       this.#startDatePicker = null;
