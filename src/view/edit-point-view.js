@@ -3,6 +3,7 @@ import { humanizeDate } from '../util/utils';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 import flatpickrOptions from '../flatpickr-options';
+import he from 'he';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
@@ -49,7 +50,7 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
       <label class="event__label  event__type-output" for="event-destination-1">
         ${point.type}
       </label>
-      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destination.name)}" list="destination-list-1">
       <datalist id="destination-list-1">
         ${createDatalistTemplate(destinations)}
       </datalist>
@@ -68,7 +69,7 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
         <span class="visually-hidden">Price</span>
         €
       </label>
-      <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${point.basePrice}">
+      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${point.basePrice}">
     </div>
 
     <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -78,7 +79,7 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
     </button>
   </header>
   <section class="event__details">
-    <section class="event__section  event__section--offers">
+    <section class="event__section  event__section--offers ${allOffers.length === 0 ? 'visually-hidden' : ''}">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
@@ -86,7 +87,7 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
       </div>
     </section>
 
-    <section class="event__section  event__section--destination">
+    <section class="event__section  event__section--destination ${destination.description === '' ? 'visually-hidden' : ''}">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destination.description}</p>
       <div class="event__photos-container">
@@ -109,8 +110,9 @@ export default class EditPointView extends AbstractStatefulView {
   #destination;
   #startDatePicker;
   #endDatePicker;
+  #onDeleteClick;
 
-  constructor(point, onPointButtonClick, onFormSubmit, getOffers, destinations) {
+  constructor({point, onPointButtonClick, onFormSubmit, getOffers, destinations, onDeleteClick}) {
     super();
     this.#point = point;
     this.#allOffers = getOffers(point.type);
@@ -120,6 +122,7 @@ export default class EditPointView extends AbstractStatefulView {
     this.#onPointButtonClick = onPointButtonClick;
     this.#onFormSubmit = onFormSubmit;
     this.#getOffers = getOffers;
+    this.#onDeleteClick = onDeleteClick;
     this._restoreHandlers();
   }
 
@@ -130,10 +133,8 @@ export default class EditPointView extends AbstractStatefulView {
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleDestinationChange);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#handlePriceChange);
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#handleOfferChange);
-    this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
-    this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#handleDeleteClick);
+    this.#initDatePickers();
   }
 
   get template() {
@@ -212,20 +213,40 @@ export default class EditPointView extends AbstractStatefulView {
   }
 
   #handleDateFromChange = ([userDate]) => {
+    this.#removeDatePickers();
     this._setState({
       dateFrom: userDate,
     });
+    this.#initDatePickers();
   };
 
   #handleDateToChange = ([userDate]) => {
+    this.#removeDatePickers();
     this._setState({
       dateTo: userDate,
     });
+    this.#initDatePickers();
   };
 
   removeElement() {
     super.removeElement();
 
+    this.#removeDatePickers();
+  }
+
+  #handleDeleteClick = (evt) => {
+    evt.preventDefault();
+    this.#onDeleteClick(EditPointView.parseStateToPoint(this._state));
+  };
+
+  #initDatePickers() {
+    this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
+    this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
+  }
+
+  #removeDatePickers() {
     if (this.#startDatePicker) {
       this.#startDatePicker.destroy();
       this.#startDatePicker = null;
