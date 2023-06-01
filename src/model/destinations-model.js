@@ -1,19 +1,27 @@
 import Observable from '../framework/observable';
-import { getDestinationById, getDestinations } from '../mock/destinations';
+import { UpdateType } from '../consts';
 
 export default class DestinationsModel extends Observable {
   #pointsModel;
+  #destinations = [];
 
-  constructor(pointsModel) {
+  constructor({pointsModel}) {
     super();
     this.#pointsModel = pointsModel;
+    this.#pointsModel.addObserver(this.#handleInitEvent);
   }
 
   get currentDestinations() {
-    return this.#pointsModel.points.map((point) => getDestinationById(point.destination));
+    return this.#pointsModel.points.map((point) => this.#destinations.find((destination) => destination.id === point.destination));
   }
 
   get allDestinations() {
-    return getDestinations();
+    return this.#destinations;
   }
+
+  #handleInitEvent = (updateType, destinations) => {
+    if (updateType === UpdateType.DESTINATIONS) {
+      this.#destinations = destinations;
+    }
+  };
 }

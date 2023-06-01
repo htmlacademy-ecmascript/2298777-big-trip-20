@@ -10,8 +10,6 @@ dayjs.updateLocale('en', {
   ]
 });
 
-const getRandomArrayElement = (array) => array[Math.floor(Math.random() * array.length)];
-
 const humanizeDate = (date, format) => dayjs(date).format(format);
 
 const getTimeDiff = (dateTo, dateFrom) => {
@@ -28,4 +26,4 @@ const getTimeDiff = (dateTo, dateFrom) => {
 
 const getDiffInSeconds = (dateTo, dateFrom) => dayjs(dateTo).diff(dayjs(dateFrom), 'second');
 
-export { getRandomArrayElement, humanizeDate, getTimeDiff, getDiffInSeconds };
+export { humanizeDate, getTimeDiff, getDiffInSeconds };

@@ -4,8 +4,8 @@ import { humanizeDate } from '../util/utils.js';
 import { DateFormats } from '../consts.js';
 import flatpickrOptions from '../flatpickr-options.js';
 import flatpickr from 'flatpickr';
-import { nanoid } from 'nanoid';
 import he from 'he';
+import { nanoid } from 'nanoid';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
@@ -117,14 +117,13 @@ export default class AddNewPointView extends AbstractStatefulView {
     this.#onFormSubmit = onFormSubmit;
     this.#onFormReset = onCancel;
     this.#point = {
-      id: '',
+      id: nanoid(),
       destination: '',
       type: Types.TAXI,
       dateFrom: new Date(),
       dateTo: new Date(),
       basePrice: 0,
       offers: [],
-      uniqueId: nanoid(),
     };
     this.#destination = {
       name: '',
