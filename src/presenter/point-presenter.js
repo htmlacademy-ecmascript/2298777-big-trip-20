@@ -109,8 +109,8 @@ export default class PointPresenter {
     );
   };
 
-  #onFormSubmit = (state) => {
-    this.#onPointChange(
+  #onFormSubmit = async(state) => {
+    await this.#onPointChange(
       UserAction.UPDATE_POINT,
       UpdateType.MINOR,
       state,

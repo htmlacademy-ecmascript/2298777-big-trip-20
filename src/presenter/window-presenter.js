@@ -10,6 +10,7 @@ import TripInfoView from '../view/trip-main-info-view';
 import { filter } from '../util/filters';
 import NewPointPresenter from './new-point-presenter';
 import NewEventButtonView from '../view/new-event-button';
+import LoadingListView from '../view/list-loading-view';
 
 export default class ListPresenter {
   #listContainer;
@@ -17,6 +18,7 @@ export default class ListPresenter {
   #destinationsModel;
   #offersModel;
   #listView = new ListView();
+  #loadingListView = new LoadingListView();
   #offersWithTypes;
   #pointPresenters = new Map();
   #currentSortType = SortTypes.DAY;
@@ -27,6 +29,7 @@ export default class ListPresenter {
   #filterModel;
   #emptyListComponent = null;
   #newPointPresenter = null;
+  #isLoading = true;
 
   constructor({ listContainer, pointsModel, destinationsModel, offersModel, headerContainer, filterModel }) {
     this.#listContainer = listContainer;
@@ -35,8 +38,6 @@ export default class ListPresenter {
     this.#offersModel = offersModel;
     this.#headerContainer = headerContainer;
     this.#filterModel = filterModel;
-    this.#offersWithTypes = [...offersModel.allOffers];
-    this.#allDestinations = [...destinationsModel.allDestinations];
     this.#pointsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
@@ -49,11 +50,16 @@ export default class ListPresenter {
 
   init() {
     render(this.#listView, this.#listContainer);
-    render(new NewEventButtonView(this.#handleAddNewPointClick), this.#headerContainer);
-    this.renderWindow();
+    render(new NewEventButtonView(this.#handleAddNewPointClick, this.#pointsModel), this.#headerContainer);
+    render(this.#loadingListView, this.#listContainer);
   }
 
   renderWindow() {
+    if (this.#isLoading) {
+      render(this.#loadingListView, this.#listContainer);
+      return;
+    }
+
     if (this.points.length === 0 && this.#emptyListComponent === null) {
       this.#emptyListComponent = new EmptyListView(this.#filterModel.filter);
       render(this.#emptyListComponent, this.#listContainer);
@@ -139,7 +145,7 @@ export default class ListPresenter {
       point.init({
         point: this.points[i],
       });
-      this.#pointPresenters.set(this.points[i].uniqueId, point);
+      this.#pointPresenters.set(this.points[i].id, point);
     }
   }
 
@@ -215,7 +221,7 @@ export default class ListPresenter {
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
-        this.#pointPresenters.get(data.uniqueId).init(data);
+        this.#pointPresenters.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
         this.destroy();
@@ -223,6 +229,13 @@ export default class ListPresenter {
         break;
       case UpdateType.MAJOR:
         this.destroy({resetSortType: true, resetSortView: true});
+        this.renderWindow();
+        break;
+      case UpdateType.INIT:
+        this.#offersWithTypes = [...this.#offersModel.allOffers];
+        this.#allDestinations = [...this.#destinationsModel.allDestinations];
+        this.#isLoading = false;
+        remove(this.#loadingListView);
         this.renderWindow();
         break;
     }

@@ -43,6 +43,16 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
+  DESTINATIONS: 'DESTINATIONS',
+  OFFERS: 'OFFERS',
 };
 
-export { DateFormats, Types, FilterTypes, SortTypes, UserAction, UpdateType };
+const ApiMethods = {
+  GET: 'GET',
+  POST: 'POST',
+  PUT: 'PUT',
+  DELETE: 'DELETE',
+};
+
+export { DateFormats, Types, FilterTypes, SortTypes, UserAction, UpdateType, ApiMethods };
