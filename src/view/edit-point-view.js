@@ -72,9 +72,9 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
       <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${point.basePrice}">
     </div>
 
-    <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-    <button class="event__reset-btn" type="reset">Delete</button>
-    <button class="event__rollup-btn" type="button">
+    <button class="event__save-btn  btn  btn--blue" type="submit" ${point.isDisabled ? 'disabled' : ''}>${point.isSaving ? 'Saving...' : 'Save'}</button>
+    <button class="event__reset-btn" type="reset" ${point.isDisabled ? 'disabled' : ''}>${point.isDeleting ? 'Deleting...' : 'Delete'}</button>
+    <button class="event__rollup-btn" type="button" ${point.isDisabled ? 'disabled' : ''}>
       <span class="visually-hidden">Open event</span>
     </button>
   </header>
@@ -188,11 +188,13 @@ export default class EditPointView extends AbstractStatefulView {
   #handleOfferChange = (evt) => {
     evt.preventDefault();
     const newOffers = [...this._state.offers];
+    const offers = this._state.offers;
+    const offerId = evt.target.dataset.id;
     if (evt.target.checked) {
-      const offer = this.#allOffers.find((item) => String(item.id) === evt.target.dataset.id);
-      newOffers.push(offer.id);
+      newOffers.push(offerId);
     } else {
-      newOffers.splice(newOffers.findIndex((offer) => String(offer.id) === evt.target.dataset.id), 1);
+      const index = offers.findIndex((offer) => offer === offerId);
+      newOffers.splice(index, 1);
     }
     this._setState({
       offers: newOffers,
@@ -203,10 +205,17 @@ export default class EditPointView extends AbstractStatefulView {
   static parsePointToState(point) {
     return {
       ...point,
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false,
     };
   }
 
   static parseStateToPoint(state) {
+    delete state.isDisabled;
+    delete state.isSaving;
+    delete state.isDeleting;
+
     return {
       ...state,
     };

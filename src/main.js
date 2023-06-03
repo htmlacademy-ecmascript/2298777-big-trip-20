@@ -9,7 +9,7 @@ import DestinationApiService from './api/destination-api-service';
 import OffersApiService from './api/offers-api-service';
 
 const END_POINT = 'https://20.objects.pages.academy/big-trip';
-const AUTH = 'Basic B78gGfED2g';
+const AUTH = 'Basic B78gGfED2gc';
 
 const tripEvents = document.querySelector('.trip-events');
 const tripMain = document.querySelector('.trip-main');

@@ -27,7 +27,7 @@ export default class PointApiService extends ApiService {
       url: URL,
       method: ApiMethods.POST,
       body: JSON.stringify(this.#adaptToServer(point)),
-      headers: new Headers({ 'content-type': 'application/json' }),
+      headers: new Headers({ 'Content-Type': 'application/json' }),
     });
 
     const parsedResponse = await ApiService.parseResponse(response);
@@ -41,9 +41,7 @@ export default class PointApiService extends ApiService {
       method: ApiMethods.DELETE,
     });
 
-    const parsedResponse = await ApiService.parseResponse(response);
-
-    return parsedResponse;
+    return response;
   }
 
   #adaptToServer (point) {
