@@ -1,11 +1,11 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+import EditPointView from './edit-point-view.js';
 import { Types } from '../consts.js';
 import { humanizeDate } from '../util/utils.js';
 import { DateFormats } from '../consts.js';
 import flatpickrOptions from '../flatpickr-options.js';
 import flatpickr from 'flatpickr';
 import he from 'he';
-import { nanoid } from 'nanoid';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
@@ -74,8 +74,8 @@ const createAddNewPointTemplate = (point, destinations, destination, offers) => 
       <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${point.basePrice}">
     </div>
 
-    <button class="event__save-btn  btn  btn--blue" type="submit" ${destination.name === '' ? 'disabled' : ''}>Save</button>
-    <button class="event__reset-btn" type="reset">Cancel</button>
+    <button class="event__save-btn  btn  btn--blue" type="submit" ${point.isDisabled || destination.name === '' ? 'disabled' : ''}>${point.isSaving ? 'Saving...' : 'Save'}</button>
+    <button class="event__reset-btn" type="reset" ${point.isDisabled ? 'disabled' : ''}>Cancel</button>
   </header>
   <section class="event__details">
     <section class="event__section  event__section--offers ${offers.length === 0 ? 'visually-hidden' : ''}">
@@ -116,14 +116,15 @@ export default class AddNewPointView extends AbstractStatefulView {
     this.#destinations = destinations;
     this.#onFormSubmit = onFormSubmit;
     this.#onFormReset = onCancel;
+    const exactTime = new Date();
     this.#point = {
-      id: nanoid(),
       destination: '',
       type: Types.TAXI,
-      dateFrom: new Date(),
-      dateTo: new Date(),
-      basePrice: 0,
+      dateFrom: exactTime,
+      dateTo: new Date(new Date(exactTime).setDate(exactTime.getDate() + 1)),
+      basePrice: 1,
       offers: [],
+      isFavorite: false,
     };
     this.#destination = {
       name: '',
@@ -133,7 +134,7 @@ export default class AddNewPointView extends AbstractStatefulView {
     };
     this.#getOffers = getOffers;
     this.#offers = getOffers(this.#point.type);
-    this._setState(this.#point);
+    this._setState(EditPointView.parsePointToState(this.#point));
     this._restoreHandlers();
   }
 
@@ -153,7 +154,7 @@ export default class AddNewPointView extends AbstractStatefulView {
 
   #handleFormSubmit = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmit(this._state);
+    this.#onFormSubmit(EditPointView.parseStateToPoint(this._state));
   };
 
   #handleFormReset = (evt) => {
@@ -198,11 +199,13 @@ export default class AddNewPointView extends AbstractStatefulView {
   #handleOfferChange = (evt) => {
     evt.preventDefault();
     const newOffers = [...this._state.offers];
+    const offers = this._state.offers;
+    const offerId = evt.target.dataset.id;
     if (evt.target.checked) {
-      const offer = this.#offers.find((item) => String(item.id) === evt.target.dataset.id);
-      newOffers.push(offer.id);
+      newOffers.push(offerId);
     } else {
-      newOffers.splice(newOffers.findIndex((offer) => String(offer.id) === evt.target.dataset.id), 1);
+      const index = offers.findIndex((offer) => offer === offerId);
+      newOffers.splice(index, 1);
     }
     this._setState({
       offers: newOffers,

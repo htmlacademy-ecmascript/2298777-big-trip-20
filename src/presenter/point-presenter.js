@@ -105,17 +105,19 @@ export default class PointPresenter {
     this.#onPointChange(
       UserAction.UPDATE_POINT,
       UpdateType.MINOR,
-      {...point, isFavorite: !point.isFavorite}
+      {...point, isFavorite: !point.isFavorite},
+      false,
     );
   };
 
   #onFormSubmit = async(state) => {
+    this.#mode = Modes.DEFAULT;
+    document.removeEventListener('keydown', this.#onEscKeydown);
     await this.#onPointChange(
       UserAction.UPDATE_POINT,
       UpdateType.MINOR,
       state,
     );
-    this.#changeEditFormToPoint();
   };
 
   #getTypeOffers = (type) => {
@@ -134,5 +136,34 @@ export default class PointPresenter {
       UpdateType.MINOR,
       point,
     );
+  };
+
+  setSaving = () => {
+    this.#pointEditView.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  };
+
+  setDeleting = () => {
+    this.#pointEditView.updateElement({
+      isDisabled: true,
+      isDeleting: true,
+    });
+  };
+
+  setAbortion = () => {
+    document.addEventListener('keydown', this.#onEscKeydown);
+    this.#mode = Modes.EDITING;
+
+    const resetForm = () => {
+      this.#pointEditView.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#pointEditView.shake(resetForm);
   };
 }

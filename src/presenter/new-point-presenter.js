@@ -44,7 +44,6 @@ export default class NewPointPresenter {
   };
 
   #onFormSubmit = (state) => {
-    this.destroy();
     this.#onPointChange(UserAction.ADD_POINT, UpdateType.MINOR, state);
   };
 
@@ -60,5 +59,23 @@ export default class NewPointPresenter {
       offers = [];
     }
     return offers;
+  };
+
+  setSaving = () => {
+    this.#newPointComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  };
+
+  setAbortion = () => {
+    const resetForm = () => {
+      this.#newPointComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+      });
+    };
+
+    this.#newPointComponent.shake(resetForm);
   };
 }
