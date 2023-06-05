@@ -256,16 +256,20 @@ export default class ListPresenter {
     }
   };
 
-  #handleViewAction = async (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update, needSaving = true) => {
     this.#uiBlocker.block();
 
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointPresenters.get(update.id).setSaving();
+        if (needSaving) {
+          this.#pointPresenters.get(update.id).setSaving();
+        }
         try {
           await this.#pointsModel.updatePoint(updateType, update);
         } catch (e) {
-          this.#pointPresenters.get(update.id).setAbortion();
+          if (needSaving) {
+            this.#pointPresenters.get(update.id).setAbortion();
+          }
         }
         break;
       case UserAction.ADD_POINT:
