@@ -55,7 +55,7 @@ export default class ListPresenter {
   get points() {
     const filteredPoints = filter[this.#filterModel.filter](this.#pointsModel.points);
 
-    return this.#sortPoints({ sortType: this.#currentSortType, returnType: 'points', points: filteredPoints });
+    return this.#sortPoints({ sortType: this.#currentSortType, points: filteredPoints });
   }
 
   init() {
@@ -202,25 +202,17 @@ export default class ListPresenter {
     this.#pointPresenters.forEach((pointPresenter) => pointPresenter.resetView());
   };
 
-  #sortPoints = ({sortType, returnType, points = this.#pointsModel.points}) => {
-    const sortable = [...points].map(
-      (value, index) => [points[index], this.#destinationsModel.currentDestinations[index], this.#offersModel.activeOffers[index]]
-    );
+  #sortPoints = ({sortType, points = this.#pointsModel.points}) => {
+    const sortable = [...points];
     switch (sortType) {
       case SortTypes.TIME:
-        sortable.sort((a, b) => getDiffInSeconds(b[0].dateTo, b[0].dateFrom) - getDiffInSeconds(a[0].dateTo, a[0].dateFrom));
+        sortable.sort((a, b) => getDiffInSeconds(b.dateTo, b.dateFrom) - getDiffInSeconds(a.dateTo, a.dateFrom));
         break;
       case SortTypes.PRICE:
-        sortable.sort((a, b) => b[0].basePrice - a[0].basePrice);
+        sortable.sort((a, b) => b.basePrice - a.basePrice);
         break;
     }
-    if (returnType === 'points') {
-      return sortable.map((value) => value[0]);
-    } else if (returnType === 'destinations') {
-      return sortable.map((value) => value[1]);
-    } else if (returnType === 'offers') {
-      return sortable.map((value) => value[2]);
-    }
+    return sortable;
   };
 
   #handleSortChange = (sortType) => {
