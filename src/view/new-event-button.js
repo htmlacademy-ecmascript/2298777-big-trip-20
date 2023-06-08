@@ -6,12 +6,12 @@ const createNewEventButtonTemplate = () => /* html */`
 `;
 
 export default class NewEventButtonView extends AbstractView {
-  #clickHandler;
+  #onClick;
   #pointsModel;
 
-  constructor(clickHandler, pointsModel) {
+  constructor(onClick, pointsModel) {
     super();
-    this.#clickHandler = clickHandler;
+    this.#onClick = onClick;
     this.#pointsModel = pointsModel;
 
     this.element.addEventListener('click', this.#handleCLick);
@@ -24,7 +24,7 @@ export default class NewEventButtonView extends AbstractView {
 
   #handleCLick = (evt) => {
     evt.preventDefault();
-    this.#clickHandler(evt);
+    this.#onClick(evt);
   };
 
   #handleInit = (updateType) => {
