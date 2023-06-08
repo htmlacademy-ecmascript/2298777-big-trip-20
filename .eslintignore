@@ -1,2 +1,2 @@
 webpack.config.js
-src/flatpickr-options.js
+src/util/flatpickr-options.js

@@ -3,7 +3,7 @@ import ListView from '../view/list-view';
 import SortView from '../view/sort-view';
 import EmptyListView from '../view/list-empty-view';
 import PointPresenter from './point-presenter';
-import { getDiffInSeconds, humanizeDate } from '../util/utils';
+import { humanizeDate } from '../util/utils';
 import { SortTypes, UpdateType, UserAction } from '../consts';
 import { DateFormats, FilterTypes } from '../consts';
 import TripInfoView from '../view/trip-main-info-view';
@@ -12,6 +12,7 @@ import NewPointPresenter from './new-point-presenter';
 import NewEventButtonView from '../view/new-event-button';
 import LoadingListView from '../view/list-loading-view';
 import UiBlocker from '../framework/ui-blocker/ui-blocker';
+import sorts from '../util/sorts';
 
 const TimeLimits = {
   MIN: 350,
@@ -55,12 +56,12 @@ export default class ListPresenter {
   get points() {
     const filteredPoints = filter[this.#filterModel.filter](this.#pointsModel.points);
 
-    return this.#sortPoints({ sortType: this.#currentSortType, points: filteredPoints });
+    return filteredPoints.sort(sorts[this.#currentSortType]);
   }
 
   init() {
     render(this.#listView, this.#listContainer);
-    render(new NewEventButtonView(this.#handleAddNewPointClick, this.#pointsModel), this.#headerContainer);
+    render(new NewEventButtonView(this.#onAddNewPointClick, this.#pointsModel), this.#headerContainer);
     render(this.#loadingListView, this.#listContainer);
   }
 
@@ -86,12 +87,63 @@ export default class ListPresenter {
     if (this.#sortComponent === null) {
       this.#sortComponent = new SortView({
         sorts: Object.values(SortTypes),
-        onSortChange: this.#handleSortChange,
+        onSortChange: this.#onSortChange,
       });
       render(this.#sortComponent, this.#listContainer, RenderPosition.AFTERBEGIN);
     }
 
     this.renderPoints();
+  }
+
+  renderPoints() {
+    for(let i = 0; i < this.points.length; i++) {
+      const point = new PointPresenter({
+        pointContainer: this.#listView,
+        onPointChange: this.#handleViewAction,
+        onModeChange: this.#onModeChange,
+        allOffers: this.#offersWithTypes,
+        allDestinations: this.#allDestinations,
+      });
+      point.init({
+        point: this.points[i],
+      });
+      this.#pointPresenters.set(this.points[i].id, point);
+    }
+  }
+
+  destroy({resetSortType = false, resetSortView = false, resetMainInfo = true} = {}) {
+    if (this.#newPointPresenter) {
+      this.#newPointPresenter.destroy();
+    }
+
+    this.#pointPresenters.forEach((pointPresenter) => pointPresenter.resetView());
+
+    if (this.#emptyListComponent !== null) {
+      remove(this.#emptyListComponent);
+      this.#emptyListComponent = null;
+    }
+
+    if (this.points.length === 0) {
+      remove(this.#sortComponent);
+      this.#sortComponent = null;
+    }
+
+    this.#pointPresenters.forEach((pointPresenter) => pointPresenter.destroy());
+    this.#pointPresenters.clear();
+
+    if (resetMainInfo) {
+      remove(this.#mainInfoComponent);
+      this.#mainInfoComponent = null;
+    }
+
+    if (resetSortType) {
+      this.#currentSortType = SortTypes.DAY;
+    }
+
+    if (resetSortView) {
+      remove(this.#sortComponent);
+      this.#sortComponent = null;
+    }
   }
 
   #generateMainInfo() {
@@ -143,58 +195,7 @@ export default class ListPresenter {
     };
   }
 
-  renderPoints() {
-    for(let i = 0; i < this.points.length; i++) {
-      const point = new PointPresenter({
-        pointContainer: this.#listView,
-        onPointChange: this.#handleViewAction,
-        onModeChange: this.#handleModeChange,
-        allOffers: this.#offersWithTypes,
-        allDestinations: this.#allDestinations,
-      });
-      point.init({
-        point: this.points[i],
-      });
-      this.#pointPresenters.set(this.points[i].id, point);
-    }
-  }
-
-  destroy({resetSortType = false, resetSortView = false, resetMainInfo = true} = {}) {
-    if (this.#newPointPresenter) {
-      this.#newPointPresenter.destroy();
-    }
-
-    this.#pointPresenters.forEach((pointPresenter) => pointPresenter.resetView());
-
-    if (this.#emptyListComponent !== null) {
-      remove(this.#emptyListComponent);
-      this.#emptyListComponent = null;
-    }
-
-    if (this.points.length === 0) {
-      remove(this.#sortComponent);
-      this.#sortComponent = null;
-    }
-
-    this.#pointPresenters.forEach((pointPresenter) => pointPresenter.destroy());
-    this.#pointPresenters.clear();
-
-    if (resetMainInfo) {
-      remove(this.#mainInfoComponent);
-      this.#mainInfoComponent = null;
-    }
-
-    if (resetSortType) {
-      this.#currentSortType = SortTypes.DAY;
-    }
-
-    if (resetSortView) {
-      remove(this.#sortComponent);
-      this.#sortComponent = null;
-    }
-  }
-
-  #handleModeChange = () => {
+  #onModeChange = () => {
     if (this.#newPointPresenter !== null) {
       this.#newPointPresenter.destroy();
       this.#newPointPresenter = null;
@@ -202,20 +203,7 @@ export default class ListPresenter {
     this.#pointPresenters.forEach((pointPresenter) => pointPresenter.resetView());
   };
 
-  #sortPoints = ({sortType, points = this.#pointsModel.points}) => {
-    const sortable = [...points];
-    switch (sortType) {
-      case SortTypes.TIME:
-        sortable.sort((a, b) => getDiffInSeconds(b.dateTo, b.dateFrom) - getDiffInSeconds(a.dateTo, a.dateFrom));
-        break;
-      case SortTypes.PRICE:
-        sortable.sort((a, b) => b.basePrice - a.basePrice);
-        break;
-    }
-    return sortable;
-  };
-
-  #handleSortChange = (sortType) => {
+  #onSortChange = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
     }
@@ -285,7 +273,7 @@ export default class ListPresenter {
     this.#uiBlocker.unblock();
   };
 
-  #handleAddNewPointClick = (evt) => {
+  #onAddNewPointClick = (evt) => {
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterTypes.EVERYTHING);
     const addNewPointButton = evt.target;
     this.#newPointPresenter = new NewPointPresenter({
@@ -294,8 +282,10 @@ export default class ListPresenter {
       allOffers: this.#offersWithTypes,
       onPointChange: this.#handleViewAction,
       addNewPointButton,
+      onCancelClick: () => this.points.length === 0 ? render(this.#emptyListComponent, this.#listContainer) : remove(this.#emptyListComponent),
     });
     addNewPointButton.disabled = true;
+    remove(this.#emptyListComponent);
     this.#newPointPresenter.init();
   };
 }

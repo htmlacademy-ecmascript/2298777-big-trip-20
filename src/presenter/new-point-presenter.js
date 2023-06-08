@@ -9,13 +9,15 @@ export default class NewPointPresenter {
   #allOffers;
   #allDestinations;
   #addNewPointButton;
+  #onCancelClick;
 
-  constructor({listContainer, allOffers, allDestinations, onPointChange, addNewPointButton}) {
+  constructor({listContainer, allOffers, allDestinations, onPointChange, addNewPointButton, onCancelClick}) {
     this.#listContainer = listContainer;
     this.#onPointChange = onPointChange;
     this.#allOffers = allOffers;
     this.#allDestinations = allDestinations;
     this.#addNewPointButton = addNewPointButton;
+    this.#onCancelClick = onCancelClick;
   }
 
   init() {
@@ -23,7 +25,7 @@ export default class NewPointPresenter {
       destinations: this.#allDestinations,
       getOffers: this.#getTypeOffers,
       onFormSubmit: this.#onFormSubmit,
-      onCancel: this.#onCancel,
+      onCancelClick: this.#onResetClick,
     });
     document.addEventListener('keydown', this.#onEscKeyDown);
 
@@ -35,31 +37,6 @@ export default class NewPointPresenter {
     remove(this.#newPointComponent);
     document.removeEventListener('keydown', this.#onEscKeyDown);
   }
-
-  #onEscKeyDown = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
-      evt.preventDefault();
-      this.destroy();
-    }
-  };
-
-  #onFormSubmit = (state) => {
-    this.#onPointChange(UserAction.ADD_POINT, UpdateType.MINOR, state);
-  };
-
-  #onCancel = () => {
-    this.destroy();
-  };
-
-  #getTypeOffers = (type) => {
-    let offers;
-    try {
-      offers = this.#allOffers.find((offer) => offer.type === type).offers;
-    } catch (err) {
-      offers = [];
-    }
-    return offers;
-  };
 
   setSaving = () => {
     this.#newPointComponent.updateElement({
@@ -77,5 +54,31 @@ export default class NewPointPresenter {
     };
 
     this.#newPointComponent.shake(resetForm);
+  };
+
+  #getTypeOffers = (type) => {
+    let offers;
+    try {
+      offers = this.#allOffers.find((offer) => offer.type === type).offers;
+    } catch (err) {
+      offers = [];
+    }
+    return offers;
+  };
+
+  #onEscKeyDown = (evt) => {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
+      evt.preventDefault();
+      this.destroy();
+    }
+  };
+
+  #onFormSubmit = (state) => {
+    this.#onPointChange(UserAction.ADD_POINT, UpdateType.MINOR, state);
+  };
+
+  #onResetClick = () => {
+    this.destroy();
+    this.#onCancelClick();
   };
 }

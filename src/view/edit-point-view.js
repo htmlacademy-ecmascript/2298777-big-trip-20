@@ -2,10 +2,10 @@ import { Types, DateFormats } from '../consts';
 import { humanizeDate } from '../util/utils';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
-import flatpickrOptions from '../flatpickr-options';
+import flatpickrOptions from '../util/flatpickr-options';
 import he from 'he';
 
-import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+import 'flatpickr/dist/flatpickr.min.css';
 
 const createPictureTemplate = (pictures) => pictures.map((picture) => /*html*/`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`).join('');
 
@@ -126,9 +126,13 @@ export default class EditPointView extends AbstractStatefulView {
     this._restoreHandlers();
   }
 
+  get template() {
+    return createEditPointTemplate(this._state, this.#destinations, this.#allOffers, this.#destination);
+  }
+
   _restoreHandlers() {
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlePointButtonClick);
-    this.element.addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.handlePointButtonClick);
+    this.element.addEventListener('submit', this.#handleFormSubmit);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#handleTypeChange);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleDestinationChange);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#handlePriceChange);
@@ -137,18 +141,39 @@ export default class EditPointView extends AbstractStatefulView {
     this.#initDatePickers();
   }
 
-  get template() {
-    return createEditPointTemplate(this._state, this.#destinations, this.#allOffers, this.#destination);
+  removeElement() {
+    super.removeElement();
+
+    this.#removeDatePickers();
   }
 
-  #handlePointButtonClick = (evt) => {
+  #initDatePickers() {
+    this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
+    this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
+      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
+  }
+
+  #removeDatePickers() {
+    if (this.#startDatePicker) {
+      this.#startDatePicker.destroy();
+      this.#startDatePicker = null;
+    }
+
+    if (this.#endDatePicker) {
+      this.#endDatePicker.destroy();
+      this.#endDatePicker = null;
+    }
+  }
+
+  handlePointButtonClick = (evt) => {
     evt.preventDefault();
     this.#allOffers = this.#getOffers(this.#point.type);
     this.updateElement(EditPointView.parsePointToState(this.#point));
     this.#onPointButtonClick();
   };
 
-  #formSubmitHandler = (evt) => {
+  #handleFormSubmit = (evt) => {
     evt.preventDefault();
     this.#onFormSubmit(EditPointView.parseStateToPoint(this._state));
   };
@@ -201,6 +226,26 @@ export default class EditPointView extends AbstractStatefulView {
     });
   };
 
+  #handleDateFromChange = ([userDate]) => {
+    this.#removeDatePickers();
+    this._setState({
+      dateFrom: userDate,
+    });
+    this.#initDatePickers();
+  };
+
+  #handleDateToChange = ([userDate]) => {
+    this.#removeDatePickers();
+    this._setState({
+      dateTo: userDate,
+    });
+    this.#initDatePickers();
+  };
+
+  #handleDeleteClick = (evt) => {
+    evt.preventDefault();
+    this.#onDeleteClick(EditPointView.parseStateToPoint(this._state));
+  };
 
   static parsePointToState(point) {
     return {
@@ -219,51 +264,5 @@ export default class EditPointView extends AbstractStatefulView {
     return {
       ...state,
     };
-  }
-
-  #handleDateFromChange = ([userDate]) => {
-    this.#removeDatePickers();
-    this._setState({
-      dateFrom: userDate,
-    });
-    this.#initDatePickers();
-  };
-
-  #handleDateToChange = ([userDate]) => {
-    this.#removeDatePickers();
-    this._setState({
-      dateTo: userDate,
-    });
-    this.#initDatePickers();
-  };
-
-  removeElement() {
-    super.removeElement();
-
-    this.#removeDatePickers();
-  }
-
-  #handleDeleteClick = (evt) => {
-    evt.preventDefault();
-    this.#onDeleteClick(EditPointView.parseStateToPoint(this._state));
-  };
-
-  #initDatePickers() {
-    this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
-    this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
-  }
-
-  #removeDatePickers() {
-    if (this.#startDatePicker) {
-      this.#startDatePicker.destroy();
-      this.#startDatePicker = null;
-    }
-
-    if (this.#endDatePicker) {
-      this.#endDatePicker.destroy();
-      this.#endDatePicker = null;
-    }
   }
 }
