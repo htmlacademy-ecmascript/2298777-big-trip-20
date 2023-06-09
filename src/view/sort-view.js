@@ -17,25 +17,25 @@ const createSortTemplate = (sorts) => /*html*/`
 
 export default class SortView extends AbstractView{
   #sorts;
-  #onSortChange;
+  #handleSortChange;
 
   constructor({sorts, onSortChange}) {
     super();
     this.#sorts = sorts;
-    this.#onSortChange = onSortChange;
+    this.#handleSortChange = onSortChange;
 
-    this.element.addEventListener('change', this.#handleSortChange);
+    this.element.addEventListener('change', this.#sortChangeHandler);
   }
 
   get template() {
     return createSortTemplate(this.#sorts);
   }
 
-  #handleSortChange = (evt) => {
+  #sortChangeHandler = (evt) => {
     if (evt.target.tagName !== 'INPUT') {
       return;
     }
     evt.preventDefault();
-    this.#onSortChange(evt.target.dataset.sortType);
+    this.#handleSortChange(evt.target.dataset.sortType);
   };
 }

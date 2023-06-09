@@ -4,30 +4,30 @@ import AddNewPointView from '../view/add-new-point-view.js';
 
 export default class NewPointPresenter {
   #listContainer;
-  #onPointChange;
+  #handlePointChange;
   #newPointComponent;
   #allOffers;
   #allDestinations;
   #addNewPointButton;
-  #onCancelClick;
+  #handleCancelClick;
 
   constructor({listContainer, allOffers, allDestinations, onPointChange, addNewPointButton, onCancelClick}) {
     this.#listContainer = listContainer;
-    this.#onPointChange = onPointChange;
+    this.#handlePointChange = onPointChange;
     this.#allOffers = allOffers;
     this.#allDestinations = allDestinations;
     this.#addNewPointButton = addNewPointButton;
-    this.#onCancelClick = onCancelClick;
+    this.#handleCancelClick = onCancelClick;
   }
 
   init() {
     this.#newPointComponent = new AddNewPointView({
       destinations: this.#allDestinations,
       getOffers: this.#getTypeOffers,
-      onFormSubmit: this.#onFormSubmit,
-      onCancelClick: this.#onResetClick,
+      onFormSubmit: this.#handleFormSubmit,
+      onCancelClick: this.#handleResetClick,
     });
-    document.addEventListener('keydown', this.#onEscKeyDown);
+    document.addEventListener('keydown', this.#escKeyDownHandler);
 
     render(this.#newPointComponent, this.#listContainer.element, RenderPosition.AFTERBEGIN);
   }
@@ -35,7 +35,7 @@ export default class NewPointPresenter {
   destroy() {
     this.#addNewPointButton.disabled = false;
     remove(this.#newPointComponent);
-    document.removeEventListener('keydown', this.#onEscKeyDown);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   setSaving = () => {
@@ -66,19 +66,19 @@ export default class NewPointPresenter {
     return offers;
   };
 
-  #onEscKeyDown = (evt) => {
+  #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
       this.destroy();
     }
   };
 
-  #onFormSubmit = (state) => {
-    this.#onPointChange(UserAction.ADD_POINT, UpdateType.MINOR, state);
+  #handleFormSubmit = (state) => {
+    this.#handlePointChange(UserAction.ADD_POINT, UpdateType.MINOR, state);
   };
 
-  #onResetClick = () => {
+  #handleResetClick = () => {
     this.destroy();
-    this.#onCancelClick();
+    this.#handleCancelClick();
   };
 }

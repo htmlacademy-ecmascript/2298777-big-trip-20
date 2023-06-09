@@ -147,12 +147,12 @@ export default class AddNewPointView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
-    this.element.addEventListener('submit', this.#handleFormSubmit);
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#handleFormReset);
-    this.element.querySelector('.event__type-group').addEventListener('change', this.#handleTypeChange);
-    this.element.querySelector('.event__input--destination').addEventListener('change', this.#handleDestinationChange);
-    this.element.querySelector('.event__input--price').addEventListener('change', this.#handlePriceChange);
-    this.element.querySelector('.event__available-offers').addEventListener('change', this.#handleOfferChange);
+    this.element.addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formResetHandler);
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
+    this.element.querySelector('.event__available-offers').addEventListener('change', this.#offerChangeHandler);
     this.#initDatePickers();
   }
 
@@ -164,9 +164,9 @@ export default class AddNewPointView extends AbstractStatefulView {
 
   #initDatePickers() {
     this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#handleDateFromChange, maxDate: this._state.dateTo});
+      {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#dateFromChangeHandler, maxDate: this._state.dateTo});
     this.#endDatePicker = flatpickr(this.element.querySelector('#event-end-time-1'),
-      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#handleDateToChange, minDate: this._state.dateFrom});
+      {...flatpickrOptions, defaultDate: this._state.dateTo, onChange: this.#dateToChangeHandler, minDate: this._state.dateFrom});
   }
 
   #removeDatePickers() {
@@ -181,17 +181,17 @@ export default class AddNewPointView extends AbstractStatefulView {
     }
   }
 
-  #handleFormSubmit = (evt) => {
+  #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this.#onFormSubmit(EditPointView.parseStateToPoint(this._state));
   };
 
-  #handleFormReset = (evt) => {
+  #formResetHandler = (evt) => {
     evt.preventDefault();
     this.#onFormReset();
   };
 
-  #handleDestinationChange = (evt) => {
+  #destinationChangeHandler = (evt) => {
     evt.preventDefault();
     let newDestination;
     try {
@@ -209,7 +209,7 @@ export default class AddNewPointView extends AbstractStatefulView {
     }
   };
 
-  #handleTypeChange = (evt) => {
+  #typeChangeHandler = (evt) => {
     evt.preventDefault();
     this.#offers = this.#getOffers(evt.target.value);
     this.updateElement({
@@ -218,14 +218,14 @@ export default class AddNewPointView extends AbstractStatefulView {
     });
   };
 
-  #handlePriceChange = (evt) => {
+  #priceChangeHandler = (evt) => {
     evt.preventDefault();
     this._setState({
       basePrice: Number(evt.target.value),
     });
   };
 
-  #handleOfferChange = (evt) => {
+  #offerChangeHandler = (evt) => {
     evt.preventDefault();
     const newOffers = [...this._state.offers];
     const offers = this._state.offers;
@@ -241,7 +241,7 @@ export default class AddNewPointView extends AbstractStatefulView {
     });
   };
 
-  #handleDateFromChange = ([userDate]) => {
+  #dateFromChangeHandler = ([userDate]) => {
     this.#removeDatePickers();
     this._setState({
       dateFrom: userDate,
@@ -249,7 +249,7 @@ export default class AddNewPointView extends AbstractStatefulView {
     this.#initDatePickers();
   };
 
-  #handleDateToChange = ([userDate]) => {
+  #dateToChangeHandler = ([userDate]) => {
     this.#removeDatePickers();
     this._setState({
       dateTo: userDate,
