@@ -62,20 +62,20 @@ export default class ListElementView extends AbstractView{
     this.#allDestinations = allDestinations;
     this.#destination = this.#allDestinations.find((dest) => dest.id === this.#point.destination);
     this.#offers = this.#getTypeOffers(this.#point.type);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlePointButtonClick);
-    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#handleFavoriteButtonClick);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#pointButtonClickHandler);
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteButtonClickHandler);
   }
 
   get template() {
     return createListElementTemplate(this.#point, this.#destination, this.#offers);
   }
 
-  #handlePointButtonClick = (evt) => {
+  #pointButtonClickHandler = (evt) => {
     evt.preventDefault();
     this.#onPointButtonClick();
   };
 
-  #handleFavoriteButtonClick = (evt) => {
+  #favoriteButtonClickHandler = (evt) => {
     evt.preventDefault();
     this.#onFavoriteButtonClick(this.#point);
   };

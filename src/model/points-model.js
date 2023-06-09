@@ -6,15 +6,11 @@ export default class PointsModel extends Observable {
   #points = [];
   #destinations = [];
   #offers = [];
-  #pointsAPiService;
-  #destinationsAPiService;
-  #offersAPiService;
+  #PointsApiService;
 
-  constructor({pointsAPiService, destinationsAPiService, offersAPiService}) {
+  constructor({PointsApiService}) {
     super();
-    this.#pointsAPiService = pointsAPiService;
-    this.#destinationsAPiService = destinationsAPiService;
-    this.#offersAPiService = offersAPiService;
+    this.#PointsApiService = PointsApiService;
   }
 
   get points() {
@@ -29,7 +25,7 @@ export default class PointsModel extends Observable {
     }
 
     try {
-      const response = await this.#pointsAPiService.updatePoint(update);
+      const response = await this.#PointsApiService.updatePoint(update);
       const updatedPoint = this.#adaptToClient(response);
       this.#points = [
         ...this.#points.slice(0, index),
@@ -44,7 +40,7 @@ export default class PointsModel extends Observable {
 
   async addPoint(updateType, update) {
     try {
-      const response = await this.#pointsAPiService.createPoint(update);
+      const response = await this.#PointsApiService.createPoint(update);
       const updatedPoint = this.#adaptToClient(response);
       this.#points = [
         updatedPoint,
@@ -64,7 +60,7 @@ export default class PointsModel extends Observable {
     }
 
     try {
-      await this.#pointsAPiService.deletePoint(update);
+      await this.#PointsApiService.deletePoint(update);
       this.#points = [
         ...this.#points.slice(0, index),
         ...this.#points.slice(index + 1),
@@ -77,20 +73,20 @@ export default class PointsModel extends Observable {
 
   async init() {
     try {
-      this.#points = (await this.#pointsAPiService.points).map(this.#adaptToClient);
+      this.#points = (await this.#PointsApiService.points).map(this.#adaptToClient);
     } catch (error) {
       this.#points = [];
     }
 
     try {
-      this.#destinations = await this.#destinationsAPiService.destinations;
+      this.#destinations = await this.#PointsApiService.destinations;
     } catch (error) {
       this.#destinations = [];
     }
     this._notify(UpdateType.DESTINATIONS, this.#destinations);
 
     try {
-      this.#offers = await this.#offersAPiService.offers;
+      this.#offers = await this.#PointsApiService.offers;
     } catch (error) {
       this.#offers = [];
     }

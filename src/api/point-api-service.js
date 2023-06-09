@@ -1,17 +1,29 @@
 import ApiService from '../framework/api-service';
 import { ApiMethods } from '../consts';
 
-const URL = 'points';
+const Urls = {
+  POINTS: 'points',
+  DESTINATIONS: 'destinations',
+  OFFERS: 'offers',
+};
 
 export default class PointApiService extends ApiService {
 
   get points () {
-    return this._load({ url: URL }).then(ApiService.parseResponse);
+    return this._load({ url: Urls.POINTS }).then(ApiService.parseResponse);
+  }
+
+  get offers() {
+    return this._load({ url: Urls.OFFERS }).then(ApiService.parseResponse);
+  }
+
+  get destinations () {
+    return this._load({ url: Urls.DESTINATIONS }).then(ApiService.parseResponse);
   }
 
   async updatePoint (point) {
     const response = await this._load({
-      url: `${URL}/${point.id}`,
+      url: `${Urls.POINTS}/${point.id}`,
       method: ApiMethods.PUT,
       body: JSON.stringify(this.#adaptToServer(point)),
       headers: new Headers({ 'Content-Type': 'application/json' }),
@@ -24,7 +36,7 @@ export default class PointApiService extends ApiService {
 
   async createPoint (point) {
     const response = await this._load({
-      url: URL,
+      url: Urls.POINTS,
       method: ApiMethods.POST,
       body: JSON.stringify(this.#adaptToServer(point)),
       headers: new Headers({ 'Content-Type': 'application/json' }),
@@ -37,7 +49,7 @@ export default class PointApiService extends ApiService {
 
   async deletePoint (point) {
     const response = await this._load({
-      url: `${URL}/${point.id}`,
+      url: `${Urls.POINTS}/${point.id}`,
       method: ApiMethods.DELETE,
     });
 
