@@ -1,31 +1,12 @@
-import { Types, DateFormats } from '../consts';
+import { DateFormats } from '../consts';
 import { humanizeDate } from '../util/utils';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 import flatpickrOptions from '../util/flatpickr-options';
 import he from 'he';
+import { createPictureTemplate, createDatalistTemplate, createEventTypesTemplate, createEventOfferSelectors } from '../util/view-utils';
 
 import 'flatpickr/dist/flatpickr.min.css';
-
-const createPictureTemplate = (pictures) => pictures.map((picture) => /*html*/`<img class="event__photo" src="${picture.src}" alt="${picture.description}">`).join('');
-
-const createDatalistTemplate = (destinations) => destinations.map((destination) => /*html*/`<option value="${destination.name}"></option>`).join('');
-
-const createEventTypesTemplate = (type) =>
-  Object.values(Types).map((value) => /*html*/`<div class="event__type-item">
-    <input id="event-type-${value}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${value}" ${type === value ? 'checked=""' : ''}>
-    <label class="event__type-label  event__type-label--${value}" for="event-type-${value}-1">${value}</label>
-  </div>`).join('');
-
-const createEventOfferSelectors = (offers, allOffers) => allOffers.map((offer) => /*html*/`<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title}-1" type="checkbox" name="event-offer-${offer.title}"
-  ${offers.some((item) => item === offer.id) ? 'checked=""' : ''} data-id="${offer.id}">
-  <label class="event__offer-label" for="event-offer-${offer.title}-1">
-    <span class="event__offer-title">${offer.title}</span>
-    &plus;&euro;&nbsp;
-    <span class="event__offer-price">${offer.price}</span>
-  </label>
-</div>`).join('');
 
 const createEditPointTemplate = (point, destinations, allOffers, destination) => /*html*/`<li class="trip-events__item">
 <form class="event event--edit" action="#" method="post">
@@ -33,7 +14,7 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
     <div class="event__type-wrapper">
       <label class="event__type  event__type-btn" for="event-type-toggle-1">
         <span class="visually-hidden">Choose event type</span>
-        <img class="event__type-icon" width="17" height="17" src="img/icons/${point.type}.png" alt="Event type icon">
+        <img class="event__type-icon" width="17" height="17" src="img/icons/${he.encode(point.type)}.png" alt="Event type icon">
       </label>
       <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -69,7 +50,7 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
         <span class="visually-hidden">Price</span>
         €
       </label>
-      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${point.basePrice}">
+      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${he.encode(String(point.basePrice))}">
     </div>
 
     <button class="event__save-btn  btn  btn--blue" type="submit" ${point.isDisabled ? 'disabled' : ''}>${point.isSaving ? 'Saving...' : 'Save'}</button>
@@ -89,7 +70,7 @@ const createEditPointTemplate = (point, destinations, allOffers, destination) =>
 
     <section class="event__section  event__section--destination ${destination.description === '' ? 'visually-hidden' : ''}">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${destination.description}</p>
+      <p class="event__destination-description">${he.encode(destination.description)}</p>
       <div class="event__photos-container">
         <div class="event__photos-tape">
           ${createPictureTemplate(destination.pictures)}
@@ -147,6 +128,13 @@ export default class EditPointView extends AbstractStatefulView {
     this.#removeDatePickers();
   }
 
+  pointButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#allOffers = this.#getOffers(this.#point.type);
+    this.updateElement(EditPointView.parsePointToState(this.#point));
+    this.#onPointButtonClick();
+  };
+
   #initDatePickers() {
     this.#startDatePicker = flatpickr(this.element.querySelector('#event-start-time-1'),
       {...flatpickrOptions, defaultDate: this._state.dateFrom, onChange: this.#dateFromChangeHandler, maxDate: this._state.dateTo});
@@ -165,13 +153,6 @@ export default class EditPointView extends AbstractStatefulView {
       this.#endDatePicker = null;
     }
   }
-
-  pointButtonClickHandler = (evt) => {
-    evt.preventDefault();
-    this.#allOffers = this.#getOffers(this.#point.type);
-    this.updateElement(EditPointView.parsePointToState(this.#point));
-    this.#onPointButtonClick();
-  };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();

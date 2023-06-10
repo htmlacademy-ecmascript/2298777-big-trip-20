@@ -46,6 +46,7 @@ const UpdateType = {
   INIT: 'INIT',
   DESTINATIONS: 'DESTINATIONS',
   OFFERS: 'OFFERS',
+  ERROR: 'ERROR',
 };
 
 const ApiMethods = {

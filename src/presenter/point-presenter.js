@@ -102,6 +102,10 @@ export default class PointPresenter {
     this.#pointEditView.shake(resetForm);
   };
 
+  setShake = () => {
+    this.#pointView.shake();
+  };
+
   #getTypeOffers = (type) => {
     try {
       this.#offers = this.#allOffers.find((offer) => offer.type === type).offers;

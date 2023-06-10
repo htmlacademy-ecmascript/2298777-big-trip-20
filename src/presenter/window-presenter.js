@@ -53,10 +53,14 @@ export default class ListPresenter {
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
-  get points() {
+  get filteredPoints() {
     const filteredPoints = filter[this.#filterModel.filter](this.#pointsModel.points);
 
     return filteredPoints.sort(sorts[this.#currentSortType]);
+  }
+
+  get points() {
+    return this.#pointsModel.points.sort(sorts[this.#currentSortType]);
   }
 
   init() {
@@ -71,17 +75,17 @@ export default class ListPresenter {
       return;
     }
 
-    if (this.points.length === 0 && this.#emptyListComponent === null) {
+    if (this.#mainInfoComponent === null && this.points.length !== 0) {
+      this.#mainInfoComponent = new TripInfoView(this.#generateMainInfo());
+      render(this.#mainInfoComponent, this.#headerContainer, RenderPosition.AFTERBEGIN);
+    }
+
+    if (this.filteredPoints.length === 0 && this.#emptyListComponent === null) {
       this.#emptyListComponent = new EmptyListView(this.#filterModel.filter);
       render(this.#emptyListComponent, this.#listContainer);
       return;
-    } else if (this.points.length === 0 && this.#emptyListComponent !== null) {
+    } else if (this.filteredPoints.length === 0 && this.#emptyListComponent !== null) {
       return;
-    }
-
-    if (this.#mainInfoComponent === null) {
-      this.#mainInfoComponent = new TripInfoView(this.#generateMainInfo());
-      render(this.#mainInfoComponent, this.#headerContainer, RenderPosition.AFTERBEGIN);
     }
 
     if (this.#sortComponent === null) {
@@ -96,7 +100,7 @@ export default class ListPresenter {
   }
 
   renderPoints() {
-    for(let i = 0; i < this.points.length; i++) {
+    for(let i = 0; i < this.filteredPoints.length; i++) {
       const point = new PointPresenter({
         pointContainer: this.#listView,
         onPointChange: this.#handleViewAction,
@@ -105,9 +109,9 @@ export default class ListPresenter {
         allDestinations: this.#allDestinations,
       });
       point.init({
-        point: this.points[i],
+        point: this.filteredPoints[i],
       });
-      this.#pointPresenters.set(this.points[i].id, point);
+      this.#pointPresenters.set(this.filteredPoints[i].id, point);
     }
   }
 
@@ -123,7 +127,7 @@ export default class ListPresenter {
       this.#emptyListComponent = null;
     }
 
-    if (this.points.length === 0) {
+    if (this.filteredPoints.length === 0) {
       remove(this.#sortComponent);
       this.#sortComponent = null;
     }
@@ -223,7 +227,7 @@ export default class ListPresenter {
         this.renderWindow();
         break;
       case UpdateType.MAJOR:
-        this.destroy({resetSortType: true, resetSortView: true});
+        this.destroy({resetSortType: true, resetSortView: true, resetMainInfo: false});
         this.renderWindow();
         break;
       case UpdateType.INIT:
@@ -233,6 +237,10 @@ export default class ListPresenter {
         remove(this.#loadingListView);
         this.renderWindow();
         break;
+      case UpdateType.ERROR:
+        this.#isLoading = false;
+        remove(this.#loadingListView);
+        render(new EmptyListView('ERROR'), this.#listContainer);
     }
   };
 
@@ -249,6 +257,8 @@ export default class ListPresenter {
         } catch (e) {
           if (needSaving) {
             this.#pointPresenters.get(update.id).setAbortion();
+          } else {
+            this.#pointPresenters.get(update.id).setShake();
           }
         }
         break;
@@ -282,7 +292,7 @@ export default class ListPresenter {
       allOffers: this.#offersWithTypes,
       onPointChange: this.#handleViewAction,
       addNewPointButton,
-      onCancelClick: () => this.points.length === 0 ? render(this.#emptyListComponent, this.#listContainer) : remove(this.#emptyListComponent),
+      onCancelClick: () => this.filteredPoints.length === 0 ? render(this.#emptyListComponent, this.#listContainer) : remove(this.#emptyListComponent),
     });
     addNewPointButton.disabled = true;
     remove(this.#emptyListComponent);
