@@ -6,11 +6,11 @@ export default class PointsModel extends Observable {
   #points = [];
   #destinations = [];
   #offers = [];
-  #PointsApiService;
+  #pointsApiService;
 
-  constructor({PointsApiService}) {
+  constructor({pointsApiService}) {
     super();
-    this.#PointsApiService = PointsApiService;
+    this.#pointsApiService = pointsApiService;
   }
 
   get points() {
@@ -25,7 +25,7 @@ export default class PointsModel extends Observable {
     }
 
     try {
-      const response = await this.#PointsApiService.updatePoint(update);
+      const response = await this.#pointsApiService.updatePoint(update);
       const updatedPoint = this.#adaptToClient(response);
       this.#points = [
         ...this.#points.slice(0, index),
@@ -40,7 +40,7 @@ export default class PointsModel extends Observable {
 
   async addPoint(updateType, update) {
     try {
-      const response = await this.#PointsApiService.createPoint(update);
+      const response = await this.#pointsApiService.createPoint(update);
       const updatedPoint = this.#adaptToClient(response);
       this.#points = [
         updatedPoint,
@@ -60,7 +60,7 @@ export default class PointsModel extends Observable {
     }
 
     try {
-      await this.#PointsApiService.deletePoint(update);
+      await this.#pointsApiService.deletePoint(update);
       this.#points = [
         ...this.#points.slice(0, index),
         ...this.#points.slice(index + 1),
@@ -73,24 +73,30 @@ export default class PointsModel extends Observable {
 
   async init() {
     try {
-      this.#points = (await this.#PointsApiService.points).map(this.#adaptToClient);
+      this.#points = (await this.#pointsApiService.points).map(this.#adaptToClient);
     } catch (error) {
       this.#points = [];
+      this._notify(UpdateType.ERROR, error.message);
+      return;
     }
 
     try {
-      this.#destinations = await this.#PointsApiService.destinations;
+      this.#destinations = await this.#pointsApiService.destinations;
+      this._notify(UpdateType.DESTINATIONS, this.#destinations);
     } catch (error) {
-      this.#destinations = [];
+      this.#points = [];
+      this._notify(UpdateType.ERROR, error.message);
+      return;
     }
-    this._notify(UpdateType.DESTINATIONS, this.#destinations);
 
     try {
-      this.#offers = await this.#PointsApiService.offers;
+      this.#offers = await this.#pointsApiService.offers;
+      this._notify(UpdateType.OFFERS, this.#offers);
     } catch (error) {
-      this.#offers = [];
+      this.#points = [];
+      this._notify(UpdateType.ERROR, error.message);
+      return;
     }
-    this._notify(UpdateType.OFFERS, this.#offers);
 
     this._notify(UpdateType.INIT);
   }

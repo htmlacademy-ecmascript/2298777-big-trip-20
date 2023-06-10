@@ -1,6 +1,7 @@
 import { humanizeDate, getTimeDiff } from '../util/utils';
 import { DateFormats } from '../consts.js';
 import AbstractView from '../framework/view/abstract-view';
+import he from 'he';
 
 const getOffersTemplate = (offers, activeOffers) => activeOffers.map((offer) => /*html*/
   `<li class="event__offer">
@@ -14,9 +15,9 @@ const createListElementTemplate = (point, destination, offers) => /*html*/`<li c
 <div class="event">
   <time class="event__date" datetime="${humanizeDate(point.dateFrom, DateFormats.NORMAL)}">${humanizeDate(point.dateFrom, DateFormats.MONTH_WITH_DAY)}</time>
   <div class="event__type">
-    <img class="event__type-icon" width="42" height="42" src="img/icons/${point.type}.png" alt="Event type icon">
+    <img class="event__type-icon" width="42" height="42" src="img/icons/${he.encode(point.type)}.png" alt="Event type icon">
   </div>
-  <h3 class="event__title">${point.type} ${destination.name}</h3>
+  <h3 class="event__title">${he.encode(point.type)} ${he.encode(destination.name)}</h3>
   <div class="event__schedule">
     <p class="event__time">
       <time class="event__start-time" datetime="${humanizeDate(point.dateFrom, DateFormats.FULL_DATE)}">${humanizeDate(point.dateFrom, DateFormats.TIME)}</time>
@@ -26,7 +27,7 @@ const createListElementTemplate = (point, destination, offers) => /*html*/`<li c
     <p class="event__duration">${getTimeDiff(point.dateTo, point.dateFrom)}</p>
   </div>
   <p class="event__price">
-    €&nbsp;<span class="event__price-value">${point.basePrice}</span>
+    €&nbsp;<span class="event__price-value">${he.encode(String(point.basePrice))}</span>
   </p>
   <h4 class="visually-hidden">Offers:</h4>
   <ul class="event__selected-offers">

@@ -6,6 +6,7 @@ const filterMessages = {
   [FilterTypes.FUTURE]: 'There are no future events now',
   [FilterTypes.PAST]: 'There are no past events now',
   [FilterTypes.PRESENT]: 'There are no present events now',
+  ERROR: 'Something went wrong. Try updating the page',
 };
 
 const createEmptyTemplate = (filterType) => /*html*/`<p class="trip-events__msg">${filterMessages[filterType]}</p>`;
